@@ -1,0 +1,57 @@
+{
+  "_id": "L2",
+  "workspace": "plant-1",
+  "owner": "role:process-engineer",
+  "type": "lesson",
+  "title": "Raise coolant concentration for Inconel 718 finish boring",
+  "content": "Chatter on Inconel 718 bores cleared when coolant concentration rose from 8% to 10%.",
+  "action": "Raise coolant concentration to 10% before finish boring Inconel 718 bores",
+  "scope": {
+    "material": "Inconel 718",
+    "process": "finish boring",
+    "machine": "VF-4",
+    "feature_class": "bore",
+    "tolerance_band": "H7"
+  },
+  "source": {
+    "ncr_id": "NCR-0412",
+    "author_role": "manufacturing-engineer",
+    "session_id": "s-001"
+  },
+  "support_sets": [
+    ["M9", "M10", "M11", "M12", "M13"]
+  ],
+  "derived_from": ["M9", "M10", "M11", "M12", "M13"],
+  "supports": [],
+  "used_by": ["D1", "D2", "D-STAGE2"],
+  "validity_state": "NEEDS_VERIFICATION",
+  "mw_success": 2,
+  "mw_fail": 0,
+  "embedding": null,
+  "created_at": "2026-10-31T09:00:00Z",
+  "valid_from": "2026-10-31T09:00:00Z",
+  "invalid_at": null,
+  "expire_at": "2026-11-30T09:00:00Z",
+  "version": 2,
+  "history": [
+    {
+      "ts": "2026-10-31T09:00:00Z",
+      "event": "created",
+      "from_state": null,
+      "to_state": "PROVISIONAL",
+      "cause": "ingest NCR-0412",
+      "event_id": null,
+      "note": ""
+    },
+    {
+      "ts": "2026-10-31T09:20:00Z",
+      "event": "lesson_state_changed",
+      "from_state": "PROVISIONAL",
+      "to_state": "NEEDS_VERIFICATION",
+      "cause": "BG-07 out of tolerance, event ev-bg07-001",
+      "event_id": "ev-bg07-001",
+      "note": "Support set weakened: measurements M10, M12 indeterminate"
+    }
+  ]
+}
+

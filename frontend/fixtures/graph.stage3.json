@@ -1,0 +1,48 @@
+{
+  "elements": {
+    "nodes": [
+      {"data": {"id": "g:BG-07", "label": "Gauge: BG-07 (OUT_OF_TOLERANCE +6µm)", "kind": "gauge", "status": "OUT_OF_TOLERANCE"}},
+      {"data": {"id": "g:CMM-02", "label": "Gauge: CMM-02 (CMM)", "kind": "gauge", "status": "OK"}},
+      {"data": {"id": "M1", "parent": "g:BG-07", "label": "M1: 32.012 (pass)", "kind": "measurement", "verdict": "pass", "current_verdict": "pass"}},
+      {"data": {"id": "M2", "parent": "g:BG-07", "label": "M2: 32.007 (pass -> INDETERMINATE)", "kind": "measurement", "verdict": "pass", "current_verdict": "indeterminate"}},
+      {"data": {"id": "M3", "parent": "g:BG-07", "label": "M3: 32.003 (pass -> FAIL)", "kind": "measurement", "verdict": "pass", "current_verdict": "fail"}},
+      {"data": {"id": "M4", "parent": "g:BG-07", "label": "M4: 32.015 (pass)", "kind": "measurement", "verdict": "pass", "current_verdict": "pass"}},
+      {"data": {"id": "M5", "parent": "g:BG-07", "label": "M5: 32.010 (pass)", "kind": "measurement", "verdict": "pass", "current_verdict": "pass"}},
+      {"data": {"id": "M6", "parent": "g:CMM-02", "label": "M6: 32.011 (pass)", "kind": "measurement", "verdict": "pass", "current_verdict": "pass"}},
+      {"data": {"id": "M7", "parent": "g:CMM-02", "label": "M7: 32.014 (pass)", "kind": "measurement", "verdict": "pass", "current_verdict": "pass"}},
+      {"data": {"id": "M8", "parent": "g:CMM-02", "label": "M8: 32.009 (pass)", "kind": "measurement", "verdict": "pass", "current_verdict": "pass"}},
+      {"data": {"id": "M9", "parent": "g:BG-07", "label": "M9: 28.010 (pass)", "kind": "measurement", "verdict": "pass", "current_verdict": "pass"}},
+      {"data": {"id": "M10", "parent": "g:BG-07", "label": "M10: 28.007 (pass -> INDETERMINATE)", "kind": "measurement", "verdict": "pass", "current_verdict": "indeterminate"}},
+      {"data": {"id": "M11", "parent": "g:BG-07", "label": "M11: 28.011 (pass)", "kind": "measurement", "verdict": "pass", "current_verdict": "pass"}},
+      {"data": {"id": "M12", "parent": "g:BG-07", "label": "M12: 28.006 (pass -> INDETERMINATE)", "kind": "measurement", "verdict": "pass", "current_verdict": "indeterminate"}},
+      {"data": {"id": "M13", "parent": "g:BG-07", "label": "M13: 28.012 (pass)", "kind": "measurement", "verdict": "pass", "current_verdict": "pass"}},
+      {"data": {"id": "L1", "label": "L1: Spring pass (ACTIVE - Saved by CMM-02)", "kind": "lesson", "state": "ACTIVE"}},
+      {"data": {"id": "L2", "label": "L2: Coolant 10% (NEEDS_VERIFICATION)", "kind": "lesson", "state": "NEEDS_VERIFICATION"}},
+      {"data": {"id": "F1", "label": "F1: Feed reduction only (PROVISIONAL)", "kind": "failed_attempt", "state": "PROVISIONAL"}},
+      {"data": {"id": "D1", "label": "D1: Inconel turbine sleeve (FLAGGED)", "kind": "decision", "flagged": true}},
+      {"data": {"id": "D2", "label": "D2: Inconel cylinder (FLAGGED)", "kind": "decision", "flagged": true}},
+      {"data": {"id": "D-STAGE2", "label": "D-STAGE2: Inconel Ø28H7 plan (FLAGGED)", "kind": "decision", "flagged": true}}
+    ],
+    "edges": [
+      {"data": {"id": "e_M1_L1", "source": "M1", "target": "L1"}},
+      {"data": {"id": "e_M2_L1", "source": "M2", "target": "L1"}},
+      {"data": {"id": "e_M3_L1", "source": "M3", "target": "L1"}},
+      {"data": {"id": "e_M4_L1", "source": "M4", "target": "L1"}},
+      {"data": {"id": "e_M5_L1", "source": "M5", "target": "L1"}},
+      {"data": {"id": "e_M6_L1", "source": "M6", "target": "L1"}},
+      {"data": {"id": "e_M7_L1", "source": "M7", "target": "L1"}},
+      {"data": {"id": "e_M8_L1", "source": "M8", "target": "L1"}},
+      {"data": {"id": "e_M9_L2", "source": "M9", "target": "L2"}},
+      {"data": {"id": "e_M10_L2", "source": "M10", "target": "L2"}},
+      {"data": {"id": "e_M11_L2", "source": "M11", "target": "L2"}},
+      {"data": {"id": "e_M12_L2", "source": "M12", "target": "L2"}},
+      {"data": {"id": "e_M13_L2", "source": "M13", "target": "L2"}},
+      {"data": {"id": "e_L2_D1", "source": "L2", "target": "D1"}},
+      {"data": {"id": "e_L2_D2", "source": "L2", "target": "D2"}},
+      {"data": {"id": "e_L1_D2S", "source": "L1", "target": "D-STAGE2"}},
+      {"data": {"id": "e_L2_D2S", "source": "L2", "target": "D-STAGE2"}},
+      {"data": {"id": "e_F1_D2S", "source": "F1", "target": "D-STAGE2"}}
+    ]
+  }
+}
+

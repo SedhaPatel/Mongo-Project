@@ -1,0 +1,5 @@
+{"ts": "2026-10-31T09:00:00Z", "event": "memory_created", "memory_id": "F1", "to_state": "PROVISIONAL", "cause": "ingest NCR-0412"}
+{"ts": "2026-10-31T09:00:01Z", "event": "memory_created", "memory_id": "L1", "to_state": "PROVISIONAL", "cause": "ingest NCR-0412"}
+{"ts": "2026-10-31T09:00:02Z", "event": "memory_created", "memory_id": "L2", "to_state": "PROVISIONAL", "cause": "ingest NCR-0412"}
+{"ts": "2026-10-31T09:05:00Z", "event": "lesson_state_changed", "memory_id": "L1", "from_state": "PROVISIONAL", "to_state": "ACTIVE", "cause": "corroborated by CMM-02 (job NCR-0419)"}
+

@@ -1,0 +1,58 @@
+{
+  "_id": "L1",
+  "workspace": "plant-1",
+  "owner": "role:process-engineer",
+  "type": "lesson",
+  "title": "Spring pass plus lower radial engagement clears bore taper",
+  "content": "Bore taper on Ti-6Al-4V housings cleared when introducing a spring pass with 0.05 mm radial depth of cut.",
+  "action": "Add a finishing spring pass with 0.05 mm radial depth of cut on Ø32H7 titanium finish boring",
+  "scope": {
+    "material": "Ti-6Al-4V",
+    "process": "finish boring",
+    "machine": "VF-4",
+    "feature_class": "bore",
+    "tolerance_band": "H7"
+  },
+  "source": {
+    "ncr_id": "NCR-0412",
+    "author_role": "manufacturing-engineer",
+    "session_id": "s-001"
+  },
+  "support_sets": [
+    ["M1", "M2", "M3", "M4", "M5"],
+    ["M6", "M7", "M8"]
+  ],
+  "derived_from": ["M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"],
+  "supports": [],
+  "used_by": ["D-STAGE2"],
+  "validity_state": "ACTIVE",
+  "mw_success": 1,
+  "mw_fail": 0,
+  "embedding": null,
+  "created_at": "2026-10-31T09:00:00Z",
+  "valid_from": "2026-10-31T09:00:00Z",
+  "invalid_at": null,
+  "expire_at": null,
+  "version": 2,
+  "history": [
+    {
+      "ts": "2026-10-31T09:00:00Z",
+      "event": "created",
+      "from_state": null,
+      "to_state": "PROVISIONAL",
+      "cause": "ingest NCR-0412",
+      "event_id": null,
+      "note": ""
+    },
+    {
+      "ts": "2026-10-31T09:05:00Z",
+      "event": "corroborated",
+      "from_state": "PROVISIONAL",
+      "to_state": "ACTIVE",
+      "cause": "corroborated by CMM-02 (job NCR-0419)",
+      "event_id": null,
+      "note": "Two instruments now support this lesson"
+    }
+  ]
+}
+

@@ -1,0 +1,72 @@
+{
+  "decision_id": "D-STAGE2",
+  "query": "Process plan for an Inconel 718 sleeve with a Ø28H7 bore",
+  "scope": {
+    "material": "Inconel 718",
+    "process": "finish boring",
+    "machine": "VF-4",
+    "feature_class": "bore",
+    "tolerance_band": "H7"
+  },
+  "plan_steps": [
+    {
+      "kind": "apply",
+      "text": "Add a finishing spring pass with 0.05 mm radial depth of cut on Ø32H7 titanium/nickel finish boring",
+      "lesson_ids": ["L1"]
+    },
+    {
+      "kind": "apply",
+      "text": "Raise coolant concentration to 10% before finish boring Inconel 718 bores",
+      "lesson_ids": ["L2"]
+    },
+    {
+      "kind": "avoid",
+      "text": "Do not: Reduce feed only. Failed on a prior job (F1)",
+      "lesson_ids": ["F1"]
+    }
+  ],
+  "lessons_used": ["L1", "L2", "F1"],
+  "ranking_trace": [
+    {
+      "memory_id": "L2",
+      "vector_score": 0.92,
+      "state": "PROVISIONAL",
+      "state_bias": 0.04,
+      "mw": 0.75,
+      "mw_term": 0.05,
+      "recency": 1.0,
+      "recency_term": 0.05,
+      "scope_match": 1.0,
+      "scope_term": 0.1,
+      "final": 1.16
+    },
+    {
+      "memory_id": "L1",
+      "vector_score": 0.81,
+      "state": "ACTIVE",
+      "state_bias": 0.12,
+      "mw": 0.67,
+      "mw_term": 0.034,
+      "recency": 1.0,
+      "recency_term": 0.05,
+      "scope_match": 0.8,
+      "scope_term": 0.08,
+      "final": 1.094
+    },
+    {
+      "memory_id": "F1",
+      "vector_score": 0.78,
+      "state": "PROVISIONAL",
+      "state_bias": 0.04,
+      "mw": 0.5,
+      "mw_term": 0.0,
+      "recency": 1.0,
+      "recency_term": 0.05,
+      "scope_match": 0.8,
+      "scope_term": 0.08,
+      "final": 0.95
+    }
+  ],
+  "explanation": "Selected active and provisional lessons matching Inconel boring operations. F1 flagged to avoid repeating known feed reduction failures."
+}
+

@@ -1,0 +1,14 @@
+{"ts": "2026-10-31T09:20:00Z", "event": "calibration_posted", "gauge_id": "BG-07", "details": {"as_found_error_mm": 0.006, "as_found_u_mm": 0.002, "status": "OUT_OF_TOLERANCE"}}
+{"ts": "2026-10-31T09:20:00.100Z", "event": "cascade_started", "gauge_id": "BG-07", "event_id": "ev-bg07-001"}
+{"ts": "2026-10-31T09:20:00.200Z", "event": "measurement_recomputed", "measurement_id": "M2", "old": "pass", "new": "indeterminate"}
+{"ts": "2026-10-31T09:20:00.210Z", "event": "measurement_recomputed", "measurement_id": "M3", "old": "pass", "new": "fail"}
+{"ts": "2026-10-31T09:20:00.220Z", "event": "measurement_recomputed", "measurement_id": "M10", "old": "pass", "new": "indeterminate"}
+{"ts": "2026-10-31T09:20:00.230Z", "event": "measurement_recomputed", "measurement_id": "M12", "old": "pass", "new": "indeterminate"}
+{"ts": "2026-10-31T09:20:00.300Z", "event": "lesson_saved_by_independent_support", "memory_id": "L1", "cause": "saved by independent support on CMM-02"}
+{"ts": "2026-10-31T09:20:00.350Z", "event": "lesson_state_changed", "memory_id": "L2", "from_state": "PROVISIONAL", "to_state": "NEEDS_VERIFICATION", "cause": "BG-07 out of tolerance, event ev-bg07-001"}
+{"ts": "2026-10-31T09:20:00.400Z", "event": "decision_flagged", "decision_id": "D1", "cause": "Used L2, now NEEDS_VERIFICATION"}
+{"ts": "2026-10-31T09:20:00.410Z", "event": "decision_flagged", "decision_id": "D2", "cause": "Used L2, now NEEDS_VERIFICATION"}
+{"ts": "2026-10-31T09:20:00.420Z", "event": "decision_flagged", "decision_id": "D-STAGE2", "cause": "Used L2, now NEEDS_VERIFICATION"}
+{"ts": "2026-10-31T09:20:00.500Z", "event": "cascade_finished", "details": {"measurements_recomputed": 4, "lesson_changes": 1, "decisions_flagged": 3}}
+{"ts": "2026-10-31T09:20:35.000Z", "event": "ttl_deleted", "memory_id": "T1", "cause": "ttl_expiry"}
+

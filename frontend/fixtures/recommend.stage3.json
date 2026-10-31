@@ -1,0 +1,73 @@
+{
+  "decision_id": "D-STAGE3",
+  "query": "Process plan for an Inconel 718 sleeve with a Ø28H7 bore",
+  "scope": {
+    "material": "Inconel 718",
+    "process": "finish boring",
+    "machine": "VF-4",
+    "feature_class": "bore",
+    "tolerance_band": "H7"
+  },
+  "plan_steps": [
+    {
+      "kind": "apply",
+      "text": "Add a finishing spring pass with 0.05 mm radial depth of cut on Ø32H7 titanium/nickel finish boring",
+      "lesson_ids": ["L1"]
+    },
+    {
+      "kind": "verify",
+      "text": "Verify on CMM-02 before adopting: Raise coolant concentration to 10% before finish boring Inconel 718 bores",
+      "lesson_ids": ["L2"],
+      "verify_instrument": "CMM-02"
+    },
+    {
+      "kind": "avoid",
+      "text": "Do not: Reduce feed only. Failed on a prior job (F1)",
+      "lesson_ids": ["F1"]
+    }
+  ],
+  "lessons_used": ["L1", "L2", "F1"],
+  "ranking_trace": [
+    {
+      "memory_id": "L1",
+      "vector_score": 0.81,
+      "state": "ACTIVE",
+      "state_bias": 0.12,
+      "mw": 0.67,
+      "mw_term": 0.034,
+      "recency": 1.0,
+      "recency_term": 0.05,
+      "scope_match": 0.8,
+      "scope_term": 0.08,
+      "final": 1.094
+    },
+    {
+      "memory_id": "L2",
+      "vector_score": 0.92,
+      "state": "NEEDS_VERIFICATION",
+      "state_bias": -0.10,
+      "mw": 0.75,
+      "mw_term": 0.05,
+      "recency": 1.0,
+      "recency_term": 0.05,
+      "scope_match": 1.0,
+      "scope_term": 0.1,
+      "final": 1.02
+    },
+    {
+      "memory_id": "F1",
+      "vector_score": 0.78,
+      "state": "PROVISIONAL",
+      "state_bias": 0.04,
+      "mw": 0.5,
+      "mw_term": 0.0,
+      "recency": 1.0,
+      "recency_term": 0.05,
+      "scope_match": 0.8,
+      "scope_term": 0.08,
+      "final": 0.95
+    }
+  ],
+  "explanation": "Plan updated following BG-07 out-of-tolerance calibration (+0.006 mm shift). Lesson L2 evidence on BG-07 is weakened (M10, M12 indeterminate), demoting it to NEEDS_VERIFICATION. Verification on CMM-02 required before applying coolant adjustments."
+}
+

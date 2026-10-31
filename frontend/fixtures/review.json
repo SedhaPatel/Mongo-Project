@@ -1,0 +1,85 @@
+[
+  {
+    "_id": "D1",
+    "query": "Process plan for Inconel 718 turbine sleeve boring",
+    "scope": {
+      "material": "Inconel 718",
+      "process": "finish boring",
+      "machine": "VF-4",
+      "feature_class": "bore",
+      "tolerance_band": "H7"
+    },
+    "plan_steps": [
+      {
+        "kind": "apply",
+        "text": "Set coolant concentration to 10% on VF-4 prior to finish boring",
+        "lesson_ids": ["L2"]
+      }
+    ],
+    "lessons_used": ["L2"],
+    "ranking_trace": [],
+    "part_serials": ["SN-2208"],
+    "created_at": "2026-10-15T14:30:00Z",
+    "review_flag": true,
+    "review_reason": "Used L2, now NEEDS_VERIFICATION after BG-07 calibration event ev-bg07-001"
+  },
+  {
+    "_id": "D2",
+    "query": "Production run for Inconel 718 hydraulic cylinder",
+    "scope": {
+      "material": "Inconel 718",
+      "process": "finish boring",
+      "machine": "VF-4",
+      "feature_class": "bore",
+      "tolerance_band": "H7"
+    },
+    "plan_steps": [
+      {
+        "kind": "apply",
+        "text": "Raise coolant concentration to 10% to eliminate bore chatter",
+        "lesson_ids": ["L2"]
+      }
+    ],
+    "lessons_used": ["L2"],
+    "ranking_trace": [],
+    "part_serials": ["SN-2211"],
+    "created_at": "2026-10-20T11:15:00Z",
+    "review_flag": true,
+    "review_reason": "Used L2, now NEEDS_VERIFICATION after BG-07 calibration event ev-bg07-001"
+  },
+  {
+    "_id": "D-STAGE2",
+    "query": "Process plan for an Inconel 718 sleeve with a Ø28H7 bore",
+    "scope": {
+      "material": "Inconel 718",
+      "process": "finish boring",
+      "machine": "VF-4",
+      "feature_class": "bore",
+      "tolerance_band": "H7"
+    },
+    "plan_steps": [
+      {
+        "kind": "apply",
+        "text": "Add a finishing spring pass with 0.05 mm radial depth of cut",
+        "lesson_ids": ["L1"]
+      },
+      {
+        "kind": "apply",
+        "text": "Raise coolant concentration to 10% before finish boring",
+        "lesson_ids": ["L2"]
+      },
+      {
+        "kind": "avoid",
+        "text": "Do not attempt feed reduction alone; failed on prior job NCR-0412",
+        "lesson_ids": ["F1"]
+      }
+    ],
+    "lessons_used": ["L1", "L2", "F1"],
+    "ranking_trace": [],
+    "part_serials": ["SN-3001", "SN-3002"],
+    "created_at": "2026-10-31T09:15:00Z",
+    "review_flag": true,
+    "review_reason": "Used L2, now NEEDS_VERIFICATION after BG-07 calibration event ev-bg07-001"
+  }
+]
+
