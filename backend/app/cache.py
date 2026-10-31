@@ -45,3 +45,4 @@ def set_cached_response(key: str, data: Any) -> None:
             json.dump(data, f, indent=2, default=str)
     except Exception as e:
         print(f"Warning: Failed to write to cache {path}: {e}")
+

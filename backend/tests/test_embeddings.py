@@ -19,3 +19,4 @@ def test_embedding_dimension_and_caching():
     assert cached is not None
     assert len(cached[0]) == 1024
     assert cached[0] == emb
+

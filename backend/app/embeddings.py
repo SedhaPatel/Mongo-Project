@@ -111,3 +111,4 @@ def get_embeddings(
     embeddings = [item["embedding"] for item in result["data"]]
     set_cached_response(key, embeddings)
     return embeddings
+

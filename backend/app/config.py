@@ -24,7 +24,14 @@ MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/?directConnect
 MONGODB_DB = os.getenv("MONGODB_DB", "metrologic")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 VOYAGE_API_KEY = os.getenv("VOYAGE_API_KEY", "")
-LLM_MODEL = os.getenv("LLM_MODEL", "claude-sonnet-5-5")
 EMBED_MODEL = os.getenv("EMBED_MODEL", "voyage-3-large")
 CACHE_DIR = os.getenv("CACHE_DIR", str(BASE_DIR / ".cache"))
+# Remote LLM provider.  OFFLINE=1 uses disk caches only.
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini").lower()
+# Model name for the selected provider (e.g. "llama3.2:1b" for ollama,
+# "gemini-2.5-flash-lite" for the Google API).
+LLM_MODEL = os.getenv("LLM_MODEL", "gemini-2.5-flash-lite")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "http://localhost:11434/v1")
+# Google Gemini API key (required when LLM_PROVIDER=gemini).
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 OFFLINE = int(os.getenv("OFFLINE", "0"))
