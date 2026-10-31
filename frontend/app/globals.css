@@ -1,0 +1,348 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Metrologic — ink & paper theme
+   Monochrome, hand-drawn field-notebook aesthetic: warm paper
+   background, near-black ink, sketchy borders, stamp shadows.
+   State colours (Section 11) survive only as small dots/accents.
+   ============================================================ */
+
+:root {
+  --paper: #f2efe7;
+  --paper-dark: #e7e2d4;
+  --ink: #17150f;
+  --ink-soft: #4a463c;
+  --ink-faint: #8a8577;
+  --line: rgba(23, 21, 15, 0.14);
+
+  --state-active: #16a34a;
+  --state-provisional: #9ca3af;
+  --state-verify: #f59e0b;
+  --state-historical: #dc2626;
+
+  --font-hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+  --font-ink: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Courier New", monospace;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background-color: var(--paper);
+  /* fibre grain + faint ruled paper */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(23, 21, 15, 0.025) 0px,
+      rgba(23, 21, 15, 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(23, 21, 15, 0.012) 0px,
+      rgba(23, 21, 15, 0.012) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  font-family: var(--font-ink);
+  font-size: 14px;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ---------- sketchy card frame ---------- */
+
+.card {
+  position: relative;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: 3px 4px 0 rgba(23, 21, 15, 0.85);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.card.alt {
+  border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  margin: 0 6px;
+  margin-top: 6px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  user-select: none;
+  transform: rotate(-0.25deg);
+}
+
+.card-head .badge {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--paper-dark);
+}
+
+.card-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 10px 12px;
+}
+
+/* ---------- controls (ink stamp buttons) ---------- */
+
+.btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 12px 4px 10px 5px / 5px 10px 4px 12px;
+  padding: 5px 10px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(23, 21, 15, 0.8);
+  transition: transform 80ms ease, box-shadow 80ms ease, opacity 120ms ease;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translate(-1px, -1px) rotate(-0.6deg);
+  box-shadow: 3px 3px 0 rgba(23, 21, 15, 0.8);
+}
+
+.btn:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 0 0 0 rgba(23, 21, 15, 0.8);
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.btn.primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn.done {
+  background: var(--paper-dark);
+  border-style: solid;
+  opacity: 0.8;
+}
+
+/* ---------- chips & stamps ---------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px 3px 7px 4px / 4px 7px 3px 8px;
+  padding: 1px 7px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: var(--paper-dark);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  display: inline-block;
+  flex: none;
+}
+
+.stamp {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border: 1.5px solid var(--ink);
+  transform: rotate(-2deg);
+}
+
+.stamp.flag {
+  color: var(--state-historical);
+  border-color: var(--state-historical);
+}
+
+/* ---------- plan steps ---------- */
+
+.step {
+  border: 1.5px solid var(--ink);
+  border-radius: 10px 4px 12px 5px / 5px 12px 4px 10px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  background: var(--paper);
+  line-height: 1.45;
+}
+
+.step .step-k {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: block;
+  margin-bottom: 3px;
+}
+
+.step.verify {
+  background: #fdf6e3;
+  border-width: 2px;
+  box-shadow: 2px 2px 0 rgba(245, 158, 11, 0.55);
+}
+
+.step.avoid {
+  background: var(--paper-dark);
+}
+
+.step.new {
+  outline: 2px dashed var(--state-verify);
+  outline-offset: 2px;
+}
+
+/* ---------- feed / timeline ---------- */
+
+.feed-item {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 5px 4px;
+  border-bottom: 1px dashed var(--line);
+  line-height: 1.5;
+  animation: ink-in 420ms ease;
+}
+
+.feed-item .ev {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+@keyframes ink-in {
+  from {
+    background: rgba(23, 21, 15, 0.22);
+  }
+  to {
+    background: transparent;
+  }
+}
+
+/* ---------- legend ---------- */
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.caption {
+  font-family: var(--font-hand);
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+/* ---------- misc ---------- */
+
+pre.json {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.trace-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.trace-table th,
+.trace-table td {
+  border: 1px solid var(--line);
+  padding: 2px 4px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.trace-table th {
+  background: var(--paper-dark);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.trace-table td:first-child,
+.trace-table th:first-child {
+  text-align: left;
+}
+
+/* cytoscape canvas */
+.cy-holder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.cy-holder canvas {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 23px,
+    rgba(23, 21, 15, 0.045) 24px
+  ) !important;
+}
+
+/* scrollbar, ink style */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(23, 21, 15, 0.35);
+  border-radius: 6px;
+  border: 2px solid var(--paper);
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}

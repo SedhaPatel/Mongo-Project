@@ -28,3 +28,12 @@ Both `L1` and `L2` start as `PROVISIONAL` (grey) after Stage 1a ingestion of NCR
 ## 8. Uncertainty used in verdict recomputation
 The calibration event's expanded uncertainty `U` (`as_found_u_mm`) is used for recomputation. The measurement's own recorded `u_mm` represents standard measurement uncertainty at time of capture and is retained for provenance display.
 
+## 9. UI design language is monochrome ink-and-paper
+The reference design supplied for Member 3's work is a monochrome hand-drawn sketch composition. The frontend uses a warm-paper + near-black-ink theme (sketchy card borders, stamp shadows) instead of a generic dashboard look. The plan's state colours (Section 11) survive only as small dots/accents and muted node fills, so the demo colour states stay legible without breaking the monochrome aesthetic.
+
+## 10. Fixture stage machine drives panels offline (Track C)
+The frontend builds stage graphs by deriving from `graph.stage1/2/3.json` (Stage 1a hides CMM-02/M6–M8 and shows L1 PROVISIONAL; Stage 1b reveals them). Fixture audit events (`events.stage1/3.jsonl`) stream with a small delay and patch node state idempotently, so the demo animates like the live SSE flow. The T1 TTL delete auto-plays ~6 s after Stage 3 when the trial was armed, with the Replay TTL event button as manual fallback — matching the demo script without backend change feeds. A temporary URL-driven auto-demo used for verification was removed after validation.
+
+## 11. T1 inspector entry is a local fixture
+Stage 3-arm's T1 memory does not exist in the static fixtures, so the inspector synthesises a minimal T1 document locally; in live mode the inspector should read `GET /memories/T1` instead.
+

@@ -170,3 +170,31 @@ backend\tests\test_stages.py .                                           [100%]
 
 ============================= 22 passed in 0.49s ==============================
 ```
+
+---
+
+## Milestone 7: UI (Track C / Member 3)
+
+- **Status:** COMPLETE (fixtures-first, offline)
+- **Design language:** Monochrome ink-and-paper theme (hand-drawn sketch borders, warm paper background, near-black ink, stamp-style shadows), per the supplied reference image. The plan's state colours (Section 11) are kept as function dots/accents only, so the demo stays legible without breaking the monochrome aesthetic.
+- **Deliverables:**
+  - `frontend/` Next.js 15 (App Router) + TypeScript + Tailwind v4 + Cytoscape.js.
+  - `frontend/app/page.tsx` — three-panel layout + demo control bar: recommendation panel (with plan diff), provenance graph (spans full height), memory inspector, event feed, review list.
+  - `frontend/components/ControlBar.tsx` — Reset, Stage 1a, Stage 1b, Stage 2, Arm TTL, Post calibration BG-07 +6 µm, Re-ask plan, Replay TTL event. Buttons are stage-gated (sequential demo flow) and mark completed stages.
+  - `frontend/components/ProvenanceGraph.tsx` — Cytoscape graph: compound gauge parents, measurement children, lesson/failed-attempt nodes coloured by validity state, decision diamonds stamped red when flagged; idempotent element diffing by id; 300 ms pulse animation on audit events; `cose` re-layout with fit on stage change.
+  - `frontend/components/RecommendationPanel.tsx` — plan steps (`apply` / `verify on <instrument>` highlighted / `avoid`), lesson chips coloured by state, and the Stage-2 vs Stage-3 plan diff with the inserted verify step outlined.
+  - `frontend/components/MemoryInspector.tsx` — raw document JSON, state-history timeline, evidence chain (recorded vs current verdict per measurement, grouped by gauge/support set), per-memory ranking trace table (one column per score term).
+  - `frontend/components/EventFeed.tsx` — SSE audit events newest-first, TTL deletions stamped.
+  - `frontend/components/ReviewList.tsx` — flagged decisions with part serials and `review_reason`.
+  - `frontend/lib/store.tsx` — fixtures stage machine: reset → 1a → 1b → 2 → 2-arm → 3; streams fixture audit events with timed release and patches the graph idempotently (measurement verdict flips, L2 → NEEDS_VERIFICATION, L1 saved-by-CMM-02 note, decision flagging, T1 TTL deletion, auto-played TTL delete ~6 s after calibration with manual Replay fallback).
+  - `frontend/lib/api.ts` + `frontend/lib/config.ts` — live-API bridge: `NEXT_PUBLIC_USE_FIXTURES=0` switches to `NEXT_PUBLIC_API_BASE` REST calls + SSE subscription; fixture mode never waits for the backend.
+  - `.env.example` — added `NEXT_PUBLIC_USE_FIXTURES`, `NEXT_PUBLIC_API_BASE`.
+- **Verification performed:**
+  - `npm run build` — compiled and typechecked clean (`Next.js 15.5.28`, standalone output, apps `index.html` and static chunks produced).
+  - Headless-Chrome walkthrough of the full reset → Stage 3 sequence (control-bar actions + timed fixture event streaming): plan diff view, 3 flagged review decisions, 17-event feed including `ttl_deleted` T1, gauge status OUT_OF_TOLERANCE, recomputed verdicts and amber L2 all rendered on screen.
+  - Browser console cleaned of cytoscape style warnings (invalid shape name, boolean selector syntax, stray CSS property, wheel sensitivity) and unmount races guarded.
+- **Notes / limitations:**
+  - M14–M16 are not in the graph fixtures, so failed-attempt F1's evidence chain renders from the graph where available; adding them to `graph.*.json` would fill that gap.
+  - One benign teardown-only cytoscape console error (`notify` on destroy) can appear when a page closes mid-layout; not reproducible in normal use.
+  - Live-API mode is wired but unexercised: Track A endpoints (`main.py`, ingestion/recall) are not implemented yet; fixtures mode is the default and demo path.
+  - A temporary `?autodemo=1` harness used for screenshot verification was removed after verification; the shipped UI drives all stages from the control bar.
