@@ -6,14 +6,16 @@ __pycache__/
 .Python
 env/
 .venv/
+.venv*/
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
+!frontend/lib/
 parts/
 sdist/
 var/
@@ -30,6 +32,10 @@ htmlcov/
 
 # Environment variables
 .env
+.env*
+*.env
+backend/.env
+frontend/.env*
 !.env.example
 
 # Node / Next.js
@@ -42,4 +48,3 @@ out/
 Thumbs.db
 .idea/
 .vscode/
-

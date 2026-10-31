@@ -14,16 +14,47 @@ const ProvenanceGraph = dynamic(() => import("@/components/ProvenanceGraph"), {
 });
 
 function Header() {
-  const { useFixtures, stage } = useStore();
+  const { useFixtures, toggleFixtures, stage } = useStore();
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "6px 10px 2px" }}>
       <h1 style={{ margin: 0, fontSize: 19, letterSpacing: "0.06em", transform: "rotate(-0.4deg)" }}>
         ✒ Metrologic
       </h1>
       <span className="stamp">calibration-aware agent memory</span>
-      <span className="chip" style={{ marginLeft: 8 }}>
+      <button
+        type="button"
+        onClick={toggleFixtures}
+        className="chip"
+        title={
+          useFixtures
+            ? "Running offline with fixtures. Click to switch to LIVE API."
+            : "Connected to live API backend. Click to switch to offline fixtures."
+        }
+        style={{
+          marginLeft: 8,
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          background: useFixtures ? "var(--paper-dark)" : "#dbeafe",
+          color: "var(--ink)",
+          border: "1.5px solid var(--ink)",
+          fontFamily: "var(--font-mono)",
+          fontSize: 11,
+          letterSpacing: "0.08em",
+          padding: "1px 8px",
+          borderRadius: 999,
+          boxShadow: "1.5px 2px 0 var(--ink)",
+        }}
+      >
+        <span
+          className="dot"
+          style={{
+            background: useFixtures ? "var(--ink-faint)" : "var(--state-active)",
+          }}
+        />
         {useFixtures ? "FIXTURES · offline" : "LIVE API"}
-      </span>
+      </button>
       <span className="chip">stage {stage === "reset" ? "—" : stage}</span>
     </div>
   );

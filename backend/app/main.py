@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pymongo.database import Database
 
@@ -599,6 +600,14 @@ def _memories_search(
 def create_app() -> FastAPI:
     """Build the FastAPI application."""
     app = FastAPI(title="Metrologic", lifespan=lifespan)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     # ---- SSE feed (Section 7.1) ----
     app.add_api_route("/events", _sse_stream, methods=["GET"], include_in_schema=False)
