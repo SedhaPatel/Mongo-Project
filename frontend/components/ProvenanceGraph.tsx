@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import cytoscape, { type Core, type ElementDefinition } from "cytoscape";
 import { useStore } from "@/lib/store";
 
@@ -164,7 +164,11 @@ export default function ProvenanceGraph() {
   const layoutKey = useRef("");
   const fitTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // build once
+  // Graph size & view controls state
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [spacing, setSpacing] = useState<"compact" | "normal" | "spacious">("normal");
+
+  // Build once
   useEffect(() => {
     if (!holder.current || cy.current) return;
     const c = cytoscape({
@@ -173,7 +177,7 @@ export default function ProvenanceGraph() {
       style: stylesheet,
       wheelSensitivity: 0.25,
       minZoom: 0.2,
-      maxZoom: 3,
+      maxZoom: 3.5,
     });
     cy.current = c;
     c.on("tap", "node", (evt) => {
@@ -213,7 +217,31 @@ export default function ProvenanceGraph() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // diff elements by id (idempotent patch)
+  // Keyboard shortcut: Esc to exit maximized mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isMaximized) {
+        setIsMaximized(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isMaximized]);
+
+  // When toggling maximized state, re-fit and resize smoothly
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (cy.current && !cy.current.destroyed()) {
+        try {
+          cy.current.resize();
+          cy.current.fit(undefined, isMaximized ? 40 : 30);
+        } catch {}
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isMaximized]);
+
+  // Diff elements by id (idempotent patch)
   useEffect(() => {
     const c = cy.current;
     if (!c || c.destroyed()) return;
@@ -239,17 +267,18 @@ export default function ProvenanceGraph() {
       }
 
       // re-layout only when the graph grows or the stage changes
-      const key = `${stage}|${elements.nodes.length}|${elements.edges.length}`;
+      const key = `${stage}|${elements.nodes.length}|${elements.edges.length}|${spacing}`;
       if (key !== layoutKey.current) {
         layoutKey.current = key;
         if (elements.nodes.length > 0) {
+          const edgeLength = spacing === "compact" ? 65 : spacing === "spacious" ? 150 : 105;
           try {
             c.layout({
               name: "cose",
               animate: true,
               animationDuration: 400,
               padding: 35,
-              idealEdgeLength: 110,
+              idealEdgeLength: edgeLength,
               randomize: false,
             }).run();
           } catch {}
@@ -270,7 +299,61 @@ export default function ProvenanceGraph() {
     } catch (err) {
       console.warn("[ProvenanceGraph elements patch]", err);
     }
-  }, [elements, stage]);
+  }, [elements, stage, spacing]);
+
+  // Run layout on demand when spacing changes
+  const handleSpacingChange = (newSpacing: "compact" | "normal" | "spacious") => {
+    setSpacing(newSpacing);
+    const c = cy.current;
+    if (!c || c.destroyed() || elements.nodes.length === 0) return;
+    const edgeLength = newSpacing === "compact" ? 65 : newSpacing === "spacious" ? 150 : 105;
+    try {
+      c.layout({
+        name: "cose",
+        animate: true,
+        animationDuration: 350,
+        padding: 35,
+        idealEdgeLength: edgeLength,
+        randomize: false,
+      }).run();
+    } catch {}
+
+    setTimeout(() => {
+      if (c && !c.destroyed()) {
+        try {
+          c.resize();
+          c.fit(undefined, 30);
+        } catch {}
+      }
+    }, 250);
+  };
+
+  // Zoom controls
+  const handleZoomIn = () => {
+    const c = cy.current;
+    if (!c || c.destroyed()) return;
+    try {
+      const center = { x: c.width() / 2, y: c.height() / 2 };
+      c.zoom({ level: c.zoom() * 1.25, renderedPosition: center });
+    } catch {}
+  };
+
+  const handleZoomOut = () => {
+    const c = cy.current;
+    if (!c || c.destroyed()) return;
+    try {
+      const center = { x: c.width() / 2, y: c.height() / 2 };
+      c.zoom({ level: c.zoom() * 0.8, renderedPosition: center });
+    } catch {}
+  };
+
+  const handleFit = () => {
+    const c = cy.current;
+    if (!c || c.destroyed()) return;
+    try {
+      c.fit(undefined, 30);
+    } catch {}
+  };
 
   // pulse on audit events (300 ms colour/width flash, cascade along downstream edges)
   useEffect(() => {
@@ -301,25 +384,197 @@ export default function ProvenanceGraph() {
   }, [pulse]);
 
   return (
-    <div className="card" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", minHeight: 0 }}>
-      <div className="card-head" style={{ justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span>provenance graph</span>
-          <span className="badge" style={{ fontSize: 9 }}>
-            Measurement → Lesson → Recommendation → Outcome
-          </span>
-        </div>
-        <div style={{ fontSize: 9.5, color: "var(--ink-faint)", fontFamily: "var(--font-mono)" }}>
-          {elements.nodes.length} nodes · {elements.edges.length} edges
-        </div>
-      </div>
-      <div className="card-body" style={{ padding: 0, flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}>
+    <>
+      {/* Dimmed backdrop when maximized */}
+      {isMaximized && (
         <div
-          className="cy-holder"
-          ref={holder}
-          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
+          onClick={() => setIsMaximized(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(23, 21, 15, 0.65)",
+            zIndex: 9998,
+            backdropFilter: "blur(2px)",
+          }}
         />
+      )}
+
+      <div
+        className="card"
+        style={
+          isMaximized
+            ? {
+                position: "fixed",
+                top: 16,
+                left: 16,
+                right: 16,
+                bottom: 16,
+                zIndex: 9999,
+                display: "flex",
+                flexDirection: "column",
+                boxShadow: "0 16px 48px rgba(0,0,0,0.45)",
+                background: "var(--paper)",
+                border: "2.5px solid var(--ink)",
+                borderRadius: 12,
+                overflow: "hidden",
+                transition: "all 200ms ease",
+              }
+            : {
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                minHeight: 0,
+              }
+        }
+      >
+        <div
+          className="card-head"
+          style={{
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 6,
+            padding: "8px 12px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span>provenance graph</span>
+            <span className="badge" style={{ fontSize: 9 }}>
+              Measurement → Lesson → Recommendation → Outcome
+            </span>
+            <span style={{ fontSize: 9.5, color: "var(--ink-faint)", fontFamily: "var(--font-mono)" }}>
+              ({elements.nodes.length} nodes)
+            </span>
+          </div>
+
+          {/* GRAPH SIZE & VIEW CONTROLS */}
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            {/* Zoom Controls */}
+            <div style={{ display: "inline-flex", gap: 2 }}>
+              <button
+                type="button"
+                className="chip"
+                onClick={handleZoomOut}
+                title="Zoom Out (−)"
+                style={{ padding: "1px 6px", fontWeight: 700, fontSize: 12, minWidth: 22, justifyContent: "center" }}
+              >
+                −
+              </button>
+              <button
+                type="button"
+                className="chip"
+                onClick={handleZoomIn}
+                title="Zoom In (+)"
+                style={{ padding: "1px 6px", fontWeight: 700, fontSize: 12, minWidth: 22, justifyContent: "center" }}
+              >
+                +
+              </button>
+              <button
+                type="button"
+                className="chip"
+                onClick={handleFit}
+                title="Center & Fit All Nodes (⛶)"
+                style={{ padding: "1px 7px", fontSize: 10 }}
+              >
+                ⛶ Fit
+              </button>
+            </div>
+
+            {/* Layout Spacing / Spread Selector */}
+            <div
+              style={{
+                display: "inline-flex",
+                border: "1.5px solid var(--ink)",
+                borderRadius: 6,
+                overflow: "hidden",
+                background: "var(--paper)",
+              }}
+              title="Graph Spread / Layout Spacing"
+            >
+              <button
+                type="button"
+                onClick={() => handleSpacingChange("compact")}
+                style={{
+                  padding: "1px 6px",
+                  fontSize: 9.5,
+                  border: "none",
+                  cursor: "pointer",
+                  background: spacing === "compact" ? "var(--ink)" : "transparent",
+                  color: spacing === "compact" ? "var(--paper)" : "var(--ink)",
+                  fontFamily: "var(--font-mono)",
+                  fontWeight: spacing === "compact" ? 700 : 400,
+                }}
+                title="Compact spacing"
+              >
+                Compact
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSpacingChange("normal")}
+                style={{
+                  padding: "1px 6px",
+                  fontSize: 9.5,
+                  borderLeft: "1px solid var(--ink)",
+                  borderRight: "1px solid var(--ink)",
+                  borderTop: "none",
+                  borderBottom: "none",
+                  cursor: "pointer",
+                  background: spacing === "normal" ? "var(--ink)" : "transparent",
+                  color: spacing === "normal" ? "var(--paper)" : "var(--ink)",
+                  fontFamily: "var(--font-mono)",
+                  fontWeight: spacing === "normal" ? 700 : 400,
+                }}
+                title="Normal spacing"
+              >
+                Normal
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSpacingChange("spacious")}
+                style={{
+                  padding: "1px 6px",
+                  fontSize: 9.5,
+                  border: "none",
+                  cursor: "pointer",
+                  background: spacing === "spacious" ? "var(--ink)" : "transparent",
+                  color: spacing === "spacious" ? "var(--paper)" : "var(--ink)",
+                  fontFamily: "var(--font-mono)",
+                  fontWeight: spacing === "spacious" ? 700 : 400,
+                }}
+                title="Spacious / Wide spacing"
+              >
+                Wide
+              </button>
+            </div>
+
+            {/* Expand / Maximize Toggle */}
+            <button
+              type="button"
+              className="chip"
+              onClick={() => setIsMaximized(!isMaximized)}
+              title={isMaximized ? "Restore view (Press Esc)" : "Expand graph to full screen"}
+              style={{
+                padding: "2px 8px",
+                fontSize: 10,
+                background: isMaximized ? "var(--ink)" : "var(--paper)",
+                color: isMaximized ? "var(--paper)" : "var(--ink)",
+                fontWeight: 600,
+                border: "1.5px solid var(--ink)",
+              }}
+            >
+              {isMaximized ? "⤡ Restore (Esc)" : "⤢ Expand"}
+            </button>
+          </div>
+        </div>
+
+        <div className="card-body" style={{ padding: 0, flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}>
+          <div
+            className="cy-holder"
+            ref={holder}
+            style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" }}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
