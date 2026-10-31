@@ -99,3 +99,74 @@ Although all checks passed natively on Atlas Local, the defined fallbacks from S
   - `ANTHROPIC_API_KEY`: Needed for Stage 1 NCR drafting and Stage 3 plan rewording (M4+), or disk fixtures if offline.
   - `VOYAGE_API_KEY`: Needed for real-time embedding generation (M3+), or precomputed embeddings in `fixtures/embeddings.json` if offline.
 
+
+
+---
+
+## Milestone 1: Contracts and Scaffolding (All Members)
+
+- **Status:** COMPLETE
+- **Deliverables:**
+  - `backend/app/models.py`: Data Contract v1 implementing `ValidityState`, `Verdict`, `MemoryType`, `Scope`, `Memory`, `Measurement`, `Gauge`, `Decision`, `AuditLog`, `StreamState`.
+  - `backend/app/config.py`: Environment variables and default configuration.
+  - `backend/app/db.py`: Idempotent bootstrap for collections, pre-images, TTL, standard indexes, and Vector Search.
+  - `docs/DECISIONS.md`: Records design decisions 1–8 per Section 16 of PLAN.md.
+  - `frontend/fixtures/`: Exported sample JSON (`memory.L1.json`, `memory.L2.json`, `review.json`, `recommend.stage2.json`, `recommend.stage3.json`, `graph.stage1.json`, `graph.stage2.json`, `graph.stage3.json`, `events.stage1.jsonl`, `events.stage3.jsonl`).
+  - `Makefile`: Commands for `up`, `seed`, `api`, `test`, `web`.
+  - `.env.example`: Configuration template committed.
+
+---
+
+## Milestone 2: Validity Engine (Pure Code) (Member B / Metrology)
+
+- **Status:** COMPLETE (ALL 18 ACCEPTANCE CHECKS PASSED)
+- **Deliverables:**
+  - `backend/app/validity/metrology.py`: Decimal interval guard-band formula ($x' = x - e$, interval $[x' - U, x' + U]$ against $[lo, hi]$).
+  - `backend/app/validity/lattice.py`: Support-set status evaluation (`holds`, `weakened`, `broken`), monotonic severity resolution (`SEVERITY`), and multi-instrument independent support checking.
+  - `backend/tests/test_metrology.py`: Exhaustive table-driven test suite covering all values from Section 6.2 (including boundary cases and negative $e$).
+  - `backend/tests/test_lattice.py`: Multi-instrument lattice tests including L1 independent-support survival, L2 demotion, all-broken case, and transitive demotion.
+
+### Acceptance Check Command Output:
+```bash
+uv run pytest backend/tests/test_metrology.py backend/tests/test_lattice.py -q
+```
+```text
+..................                                                       [100%]
+18 passed in 0.13s
+```
+
+---
+
+## Milestone 3 & 5 Progress: Calibration Cascade & Synthetic Seed (Member B)
+
+- **Status:** VALIDATED
+- **Deliverables:**
+  - `backend/seed/scenario.yaml`: 6 gauges, NCR-0412 trials, measurements M1–M16, M-old, demo memories L1, L2, F1, decisions D1, D2.
+  - `backend/seed/generate.py`: ~193 filler measurements, 13 background lessons, precomputed 1024-dim unit vectors in `fixtures/embeddings.json`.
+  - `backend/seed/reset.py`: Drops and reloads demo data under 10s.
+  - `backend/seed/stages.py`: Step-by-step stage runners (1a, 1b, 2, 3-arm, 3).
+  - `backend/app/validity/cascade.py`: Suspect window selection ($last\_good\_cal < timestamp \le event\_time$), verdict recomputation, support-set lattice demotion, $graphLookup transitive demotion, decision review flagging, and strict idempotency.
+  - `backend/app/streams/gauge_watcher.py`: Change stream watcher with resume token persistence and direct execution fallback.
+  - `backend/app/events.py`: Thread-safe audit log recorder with 200-event circular replay buffer.
+  - `backend/tests/test_cascade.py` & `backend/tests/test_stages.py`: Comprehensive test suites proving M-old untouched, Section 9.5 expected outcome table, strict idempotency, and full stage progression.
+
+### Full Test Suite Execution Output:
+```bash
+uv run pytest
+```
+```text
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0
+rootdir: D:\CODING\Mongo-Project
+configfile: pyproject.toml
+testpaths: backend/tests, tests
+plugins: anyio-4.15.1
+collected 22 items
+
+backend\tests\test_cascade.py ...                                        [ 13%]
+backend\tests\test_lattice.py .......                                    [ 45%]
+backend\tests\test_metrology.py ...........                              [ 95%]
+backend\tests\test_stages.py .                                           [100%]
+
+============================= 22 passed in 0.49s ==============================
+```
