@@ -1,0 +1,48 @@
+{
+  "_comment": "Offline fallback for the NCR-0412 lesson draft (PLAN 7.3). Used only when the forced Claude tool call is unavailable or its answer fails validation. Order matters: the writer assigns L1, L2, F1 in this order.",
+  "ncr_id": "NCR-0412",
+  "lessons": [
+    {
+      "kind": "lesson",
+      "title": "Spring pass plus lower radial engagement clears bore taper",
+      "content": "Bore taper on Ti-6Al-4V housings cleared when introducing a spring pass with 0.05 mm radial depth of cut.",
+      "action": "Add a finishing spring pass with 0.05 mm radial depth of cut on Ø32H7 titanium finish boring",
+      "scope": {
+        "material": "Ti-6Al-4V",
+        "process": "finish boring",
+        "machine": "VF-4",
+        "feature_class": "bore",
+        "tolerance_band": "H7"
+      },
+      "measurement_ids": ["M1", "M2", "M3", "M4", "M5"]
+    },
+    {
+      "kind": "lesson",
+      "title": "Raise coolant concentration for Inconel 718 finish boring",
+      "content": "Chatter on Inconel 718 bores cleared when coolant concentration rose from 8% to 10%.",
+      "action": "Raise coolant concentration to 10% before finish boring Inconel 718 bores",
+      "scope": {
+        "material": "Inconel 718",
+        "process": "finish boring",
+        "machine": "VF-4",
+        "feature_class": "bore",
+        "tolerance_band": "H7"
+      },
+      "measurement_ids": ["M9", "M10", "M11", "M12", "M13"]
+    },
+    {
+      "kind": "failed_attempt",
+      "title": "Feed reduction alone fails to correct bore taper on Ti-6Al-4V",
+      "content": "Reducing feed rate from 0.08 mm/rev to 0.04 mm/rev on the finish boring trial caused tool rubbing and worsened the bore taper.",
+      "action": "Do not attempt feed reduction alone on Ø32H7 titanium finish boring; it worsens bore taper and drives the bore out of tolerance",
+      "scope": {
+        "material": "Ti-6Al-4V",
+        "process": "finish boring",
+        "machine": "VF-4",
+        "feature_class": "bore",
+        "tolerance_band": "H7"
+      },
+      "measurement_ids": ["M14", "M15", "M16"]
+    }
+  ]
+}

@@ -19,7 +19,9 @@ def _get_cache_path(key: str) -> Path:
 
 
 def compute_cache_key(model: str, payload: Any) -> str:
-    canonical = json.dumps({"model": model, "payload": payload}, sort_keys=True)
+    # ``default=str`` lets payloads that carry BSON dates (e.g. a memory's
+    # history in the reword input) hash stably instead of raising TypeError.
+    canonical = json.dumps({"model": model, "payload": payload}, sort_keys=True, default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -40,6 +42,6 @@ def set_cached_response(key: str, data: Any) -> None:
     path = _get_cache_path(key)
     try:
         with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
+            json.dump(data, f, indent=2, default=str)
     except Exception as e:
         print(f"Warning: Failed to write to cache {path}: {e}")

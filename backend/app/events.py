@@ -29,6 +29,11 @@ def get_replay_events(limit: int = 200) -> List[Dict[str, Any]]:
     return events[-limit:]
 
 
+def clear_events() -> None:
+    """Clears the replay buffer (called by ``POST /demo/reset``)."""
+    _REPLAY_BUFFER.clear()
+
+
 def subscribe_events() -> asyncio.Queue:
     """Subscribes an SSE connection queue."""
     q: asyncio.Queue = asyncio.Queue()

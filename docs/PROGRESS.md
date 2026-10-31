@@ -198,3 +198,262 @@ backend\tests\test_stages.py .                                           [100%]
   - One benign teardown-only cytoscape console error (`notify` on destroy) can appear when a page closes mid-layout; not reproducible in normal use.
   - Live-API mode is wired but unexercised: Track A endpoints (`main.py`, ingestion/recall) are not implemented yet; fixtures mode is the default and demo path.
   - A temporary `?autodemo=1` harness used for screenshot verification was removed after verification; the shipped UI drives all stages from the control bar.
+
+---
+
+## Milestone 3 (Track A): Lesson writer and corroboration (PLAN 7.2, 7.4)
+
+- **Status:** COMPLETE
+- **Deliverables:**
+  - `backend/app/memory/writer.py`: `ProvenanceError`, `write_lesson()` (provenance enforced, evidence grouped by gauge into `support_sets`, 30-day BSON `expire_at`, contract-validated via `Memory`), `corroborate()` (merges evidence by instrument, promotes only with an independent holding set, unsets `expire_at`), `set_statuses()` (reuses `validity/lattice.py`).
+  - `backend/app/embeddings.py`: optional offline resolution through `backend/seed/fixtures/text_embeddings.json` after cache and before Voyage. Exact-text only; a miss with `OFFLINE=1` still raises.
+  - `backend/seed/text_embeddings.py` + `backend/seed/fixtures/text_embeddings.json`: deterministic 1024-dim fixture vectors for the demo texts (synthetic data, not a Voyage substitute).
+  - `backend/tests/test_writer.py`: 11 tests (empty/unknown provenance refused, grouping, 30-day TTL, ID allocation, corroboration merge/promotion/same-gauge case).
+- **VERIFY – Voyage model/dimension:** `voyage-3-large` exists and defaults to 1024 dims (source: https://docs.voyageai.com/docs/embeddings, checked 2026-10-31). No live API call was possible without a key; the fixture path is what makes the suite pass offline.
+
+### Check command output
+```bash
+python -m pytest backend/tests/test_writer.py -q
+```
+```text
+...........                                                              [100%]
+11 passed in 0.59s
+```
+
+```bash
+python -m pytest -q
+```
+```text
+..................................                                       [100%]
+34 passed in 1.20s
+```
+
+---
+
+## Milestone 3 (Track A): Ranking and retrieval (PLAN 7.5)
+
+- **Status:** COMPLETE
+- **Deliverables:**
+  - `backend/app/memory/ranking.py`: `memory_worth`, `recency_factor`, `scope_match`, `score_memory`, `rank_memories`, `traces`; the weight constants and state-bias table are exported so tests assert them.
+  - `backend/app/memory/retrieval.py`: `$vectorSearch` pipeline with workspace/type/state pre-filters, `history=true` drops the state filter, optional `scope_filter` for material/process, `search_memories` response shape for `GET /memories/search`.
+  - **Fallback:** when the deployment cannot serve `$vectorSearch` (standalone MongoDB here; `tests/mock_db.py` in tests) the same filter is applied with `find` plus in-process cosine. The fallback is only selected when the aggregation cannot produce `vector_score`, so Atlas always uses the index. Recorded in DECISIONS 15.
+  - `backend/tests/test_ranking.py`: 17 tests covering the weight/bias table, MW formula, recency, scope share, every trace term, deterministic ordering, history mode and scope filtering.
+- **Ranking trace on the seed (Stage 2 query, top 5):**
+```text
+ L2 final=0.5325 vec=0.3426 state=PROVISIONAL        bias=+0.04 mw=0.500 scope=1.0
+ L1 final=0.3375 vec=0.1676 state=PROVISIONAL        bias=+0.04 mw=0.500 scope=0.8
+ F1 final=0.3370 vec=0.1671 state=PROVISIONAL        bias=+0.04 mw=0.500 scope=0.8
+ B1 final=0.2538 vec=0.0145 state=ACTIVE             bias=+0.12 mw=0.889 scope=0.2
+ B4 final=0.2498 vec=0.0276 state=ACTIVE             bias=+0.12 mw=0.800 scope=0.2
+```
+
+### Check command output
+```bash
+python -m pytest backend/tests/test_ranking.py -q
+```
+```text
+.................                                                        [100%]
+17 passed in 1.01s
+```
+
+---
+
+## Milestone 3 (Track A): LLM wrapper and NCR ingest (PLAN 7.3)
+
+- **Status:** COMPLETE
+- **Deliverables:**
+  - `backend/app/agent/llm.py`: `draft_lessons` / `reword_plan` with a single forced `tool_choice`, disk cache via `cache.py` keyed by `(model, tool, system, input, attempt)`, and `LLMUnavailable` when there is no key / `OFFLINE=1` miss / transport error. Transport is the Anthropic Messages REST API through `httpx` (DECISIONS 17); `tool_choice={"type":"tool","name":...}` is sent exactly as the SDK would.
+  - `backend/app/agent/ingest.py`: validates and upserts measurements through the frozen `Measurement` contract (`current_verdict = verdict`, empty `verdict_history`), calls the forced tool, validates every returned ID against the input IDs and every item's shape, retries once, then uses `seed/fixtures/ncr_0412_lessons.json`. The fallback is itself validated and only used for the NCR it describes. Every accepted draft goes through `write_lesson` (so provenance is still enforced).
+  - `backend/seed/fixtures/ncr_0412_lessons.json`: committed offline draft (L1, L2, F1 order) used by the demo.
+  - `backend/tests/test_ingest.py`: 9 tests — L1/L2/F1 order and support sets, unknown-citation rejection + fallback, retry-once acceptance, cached draft, non-matching NCR refused, invalid body refused, scope field cleanup.
+- **Determinism:** the fallback draft is written to the disk cache under the same key, so a later `POST /ncr` for NCR-0412 replays the identical draft with `draft_source="cache"` and no network.
+- **Not touched:** `validity/`, `streams/gauge_watcher.py`, `seed/scenario.yaml`, `seed/stages.py`, the frontend.
+
+### Check command output
+```bash
+python -m pytest backend/tests/test_ingest.py -q
+```
+```text
+.........                                                                [100%]
+9 passed in 1.21s
+```
+
+```bash
+python -m pytest -q
+```
+```text
+............................................................             [100%]
+60 passed in 2.23s
+```
+
+---
+
+## Milestone 3 (Track A): Plan building and rewording (PLAN 7.7)
+
+- **Status:** COMPLETE
+- **Deliverables:**
+  - `backend/app/agent/recommend.py`: `build_plan_steps` (apply / verify / avoid built by code in rank order), `pick_verify_instrument` (OK gauges only, excludes every gauge in a weakened/broken support set, prefers `type == "cmm"`, then alphabetical), `build_explanation` (deterministic sentence grounded in `history[]`), `validate_reword` (same count, order, `kind`, `lesson_ids`; wording only), decision persistence (`D<next integer>`, ignores `D-STAGE2`-style demo IDs), `$addToSet used_by`, `decision_created` event.
+  - `backend/tests/mock_db.py`: added `$addToSet` support so the `used_by` assertion exercises the real update.
+  - `backend/tests/test_recommend.py`: 9 tests — Stage 2 apply L1/L2 + avoid F1, full trace, Stage 3 verify on CMM-02 with L1 unchanged, CMM preference and alphabetical fallback, weakened-gauge exclusion, reword count/id/kind guard, retry once, valid wording applied with `verify_instrument` preserved, history-only lessons skipped.
+- **LLM behaviour offline:** forced rewording is unavailable without a key, so `reword_source="code"` and the code-built text ships. A valid cached reply is used when present; any shape change is rejected and the code text is kept.
+- **Trace (corroborated L1, then BG-07 +0.006 mm / U 0.002 mm):**
+```text
+STAGE 2 D3 code
+  apply ['L2'] | Apply: Raise coolant concentration to 10% before finish boring Inconel 718 bores
+  apply ['L1'] | Apply: Add a finishing spring pass with 0.05 mm radial depth of cut on Ø32H7 titanium finish boring
+  avoid ['F1'] | Do not attempt feed reduction alone on Ø32H7 titanium finish boring; ...
+  apply ['B1'] | Apply: Apply calibrated feed rate of 0.12 mm/tooth for Al 7075-T6 face milling
+  apply ['B4'] | Apply: Apply calibrated feed rate of 0.12 mm/tooth for Inconel 718 thread milling
+  trace: [('L2', 0.5325), ('L1', 0.4175), ('F1', 0.337), ('B1', 0.2538), ('B4', 0.2498)]
+STAGE 3 re-ask code
+  apply ['L1'] | Apply: Add a finishing spring pass with 0.05 mm radial depth of cut on Ø32H7 titanium finish boring
+  verify ['L2'] CMM-02 | Verify on CMM-02 before adopting: Raise coolant concentration to 10% before finish boring Inconel 718 bores
+  avoid ['F1'] | Do not attempt feed reduction alone on Ø32H7 titanium finish boring; ...
+  trace: [('L1', 'ACTIVE', 0.4175), ('L2', 'NEEDS_VERIFICATION', 0.3925), ('F1', 'PROVISIONAL', 0.337), ...]
+  explanation: L2 is now NEEDS_VERIFICATION after BG-07 out of tolerance, event ev-bg07-demo, so the plan verifies it on CMM-02 before it is applied.
+  review: ['D1', 'D2', 'D3']
+```
+
+### Check command output
+```bash
+python -m pytest backend/tests/test_recommend.py -q
+```
+```text
+.........                                                                [100%]
+9 passed in 1.46s
+```
+
+```bash
+python -m pytest -q
+```
+```text
+.....................................................................    [100%]
+69 passed in 2.87s
+```
+
+---
+
+## Milestone 3 (Track A): API, SSE and demo endpoints (PLAN 8, 8.1, 10)
+
+- **Status:** COMPLETE
+- **Environment note:** `uv` is not on PATH here, so every check is run with `python -m pytest` (Python 3.14.6, pymongo 4.19, standalone MongoDB at `mongodb://127.0.0.1:27017`). `$vectorSearch` and `$changeStream` are unavailable on this deployment; the retrieval fallback (DECISIONS 15) and the inline cascade (DECISIONS 23) are exercised by the live run below.
+- **Deliverables (`backend/app/main.py`):**
+  1. `GET /events` subscribes to the live `backend.app.events` bus inside the response generator and unsubscribes in its `finally` block (the previous code leaked one queue per connection).
+  2. `POST /demo/stage/{stage_n}` takes the `?step=` query parameter: stage 1 defaults to `a` (NCR ingest), `step=b` corroborates L1 on CMM-02; stage 2 persists `D-STAGE2`; stage 3 supports `step=arm` and the default calibration run.
+  3. `GET /decisions/review` is sorted newest first instead of relying on collection order.
+  4. `/memories/search` is registered before `/memories/{memory_id}` and is not shadowed.
+  5. The database handle is lazy (`get_db_handle()`), so importing `main`/`create_app()` needs no MongoDB; tests inject `main._db`.
+  - Endpoints added: `POST /ncr`, `POST /lessons/{id}/corroborate`, `POST /recommend`, `GET /memories/search`, `GET /memories/{id}` (memory + evidence chain with live `gauge_cal_status`), `GET /graph` (Cytoscape elements, 36 nodes), `POST /calibration`, `GET /decisions/review`, `POST /demo/reset`.
+  - `backend/app/events.py`: `clear_events()` so `/demo/reset` empties the SSE replay buffer as well as the collections.
+  - `backend/app/streams/memory_watcher.py`: removed the unused `UpdateOptions` import that pymongo 4.19 does not export (DECISIONS 22).
+  - `backend/app/cache.py`: cache keys/writes accept BSON dates via `default=str` (DECISIONS 25).
+  - `backend/tests/test_api.py`: 10 tests over `TestClient` + `MockDatabase` — full stage flow, `?direct=true`, corroborate merge, 404/400 paths, SSE replay + generator-owned unsubscribe, event-bus broadcast, graph budget and search ordering.
+- **SSE test note:** `TestClient` cannot cleanly close an endless event stream, so the test drives `main._sse_stream(replay=1)`'s body iterator directly: one replay chunk, then `aclose()`, asserting `_SUBSCRIBERS` is empty afterwards.
+
+### Check command output
+```bash
+python -m pytest backend/tests/test_api.py -q
+```
+```text
+..........                                                               [100%]
+10 passed in 4.09s
+```
+
+```bash
+python -m pytest -q
+```
+```text
+........................................................................ [ 91%]
+.......                                                                  [100%]
+79 passed in 14.62s
+```
+
+### Live acceptance on the local MongoDB (no API key)
+
+Reset -> Stage 1a -> Stage 1b -> Stage 2 -> `POST /calibration?direct=true` -> `POST /recommend` -> review/graph/search:
+
+```text
+POST /demo/reset -> 200
+{"gauges": 6, "background_lessons": 13, "measurements": 193, "decisions": 2}
+
+POST /demo/stage/1?step=a -> 200
+draft_source: cache
+memory_ids: ["L1", "L2", "F1"]
+L1 lesson          PROVISIONAL  support_sets [["M1","M2","M3","M4","M5"]]
+L2 lesson          PROVISIONAL  support_sets [["M9","M10","M11","M12","M13"]]
+F1 failed_attempt  PROVISIONAL  support_sets [["M14","M15","M16"]]
+
+POST /demo/stage/1?step=b -> 200
+memory_id: L1, new_state: ACTIVE
+support_sets: [["M1","M2","M3","M4","M5"], ["M6","M7","M8"]]
+
+POST /demo/stage/2 -> 200 (decision D-STAGE2, reword_source code)
+  apply ["L2"] | Apply: Raise coolant concentration to 10% before finish boring Inconel 718 bores
+  apply ["L1"] | Apply: Add a finishing spring pass with 0.05 mm radial depth of cut on Ø32H7 titanium finish boring
+  avoid ["F1"] | Do not attempt feed reduction alone on Ø32H7 titanium finish boring; ... Failed on a prior job (F1)
+  trace: L2 0.5326, L1 0.4176, F1 0.3371, B1 0.2538, B4 0.2499
+
+POST /calibration?direct=true -> 200
+{"event_id": "ev-bg07-live", "direct": true,
+ "cascade_summary": {"measurements_recomputed": 53, "verdict_changes": 4,
+                     "lesson_changes": 1, "decisions_flagged": 3}}
+
+POST /recommend (after cascade) -> 200 (decision D3)
+  apply  ["L1"]          | Apply: Add a finishing spring pass with 0.05 mm radial depth of cut ...
+  verify ["L2"] CMM-02   | Verify on CMM-02 before adopting: Raise coolant concentration to 10% ...
+  avoid  ["F1"]          | Do not attempt feed reduction alone ...
+  explanation: L2 is now NEEDS_VERIFICATION after BG-07 out of tolerance, event ev-bg07-live,
+               so the plan verifies it on CMM-02 before it is applied.
+  trace: L1 ACTIVE 0.4176, L2 NEEDS_VERIFICATION 0.3926, F1 PROVISIONAL 0.3371, ...
+
+GET /memories/L1 -> flat memory document + evidence: state ACTIVE, living on BG-07 + CMM-02
+GET /memories/L2 -> flat memory document + evidence: state NEEDS_VERIFICATION, M10 and M12 now indeterminate
+GET /decisions/review -> 3 flagged, newest first: D-STAGE2, D2, D1
+  review_reason: "Used L2, now NEEDS_VERIFICATION after BG-07 calibration event ev-bg07-live"
+GET /graph -> {"elements": {"nodes": 36, "edges": 24}} (gauge 6, measurement 16,
+              measurement_group 6, lesson 2, failed_attempt 1, lesson_group 1,
+              decision 4) — under 40
+GET /memories/search -> 200, 5 hits: L2 NEEDS_VERIFICATION, L1 ACTIVE, B4 ACTIVE, F1 PROVISIONAL, B9 ACTIVE
+```
+
+**DONE WHEN:** the three demo stages match the checklist: L1/L2/F1 PROVISIONAL after `/ncr`, L1 ACTIVE after CMM-02 corroboration, Stage 2 applies L1+L2 and avoids F1 with a full ranking trace, and after `BG-07 +0.006 mm / U 0.002 mm` the re-ask verifies L2 on CMM-02 while L1 stays ACTIVE.
+
+### Live event feed and TTL fields (same run, persisted `audit_log`)
+
+`GET /events` replays `backend.app.events._REPLAY_BUFFER`, which receives the same documents `log_event()` writes to `audit_log`. The inline cascade published the whole sequence for `ev-bg07-live` in order:
+
+```text
+calibration_posted
+cascade_started
+measurement_recomputed x4   (M10, M12, plus the two other BG-07 verdict changes)
+lesson_saved_by_independent_support   (L1, "saved by independent support on CMM-02")
+lesson_state_changed          (L2 -> NEEDS_VERIFICATION)
+decision_flagged x3           (D-STAGE2, D2, D1)
+cascade_finished
+```
+
+The unit test `test_events_replays_and_unsubscribes_in_generator` proves the SSE generator subscribes, replays, and unsubscribes; `test_event_bus_broadcasts_to_active_subscribers` proves a live subscriber queue receives the same dict.
+
+TTL/provenance fields on the live documents: `L2` is still PROVISIONAL and carries a 1024-float `embedding` and a BSON `expire_at` of `2026-11-30T06:04:27Z` (30 days after creation). `L1` was promoted to ACTIVE by corroboration, so `write_lesson`'s `expire_at` was unset by `corroborate()` (PLAN 7.4); its history is `created -> corroborated by CMM-02 (NCR-0419) -> saved by independent support on CMM-02`. `POST /demo/reset` took 0.26 s (budget: 10 s).
+
+Expected local noise: `bootstrap()` prints `Notice: vector search index creation ... SearchNotEnabled` twice on the standalone server; the exception is caught, and retrieval uses the in-process cosine fallback (DECISIONS 15).
+
+### Public endpoints on a scratch database
+
+Reset -> `POST /ncr` (the public endpoint, not the demo runner) -> `POST /calibration` **without** the flag, on a scratch DB that is dropped afterwards:
+
+```text
+POST /ncr -> 200 cache ['L1', 'L2', 'F1']
+states: [('L1', 'PROVISIONAL'), ('L2', 'PROVISIONAL'), ('F1', 'PROVISIONAL')]
+POST /calibration (no flag) -> 200 direct: True
+cascade_summary: {"measurements_recomputed": 53, "verdict_changes": 4,
+                  "lesson_changes": 2, "decisions_flagged": 2}
+L2: NEEDS_VERIFICATION L1: HISTORICAL_ONLY
+POST /ncr (empty measurements) -> 400 measurements must contain at least one document
+```
+
+`L1` is HISTORICAL_ONLY here because this scratch flow skips Stage 1b: without the CMM-02 set, its only evidence is on BG-07. That is the lattice working as specified and is exactly why the demo corroborates L1 before the calibration. The missing `?direct` flag also proves the standalone fallback in DECISIONS 23.
+
+
+
+

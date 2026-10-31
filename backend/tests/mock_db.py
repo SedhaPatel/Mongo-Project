@@ -118,6 +118,12 @@ class MockCollection:
                 if k not in doc or not isinstance(doc[k], list):
                     doc[k] = []
                 doc[k].append(deepcopy(v))
+        if "$addToSet" in update:
+            for k, v in update["$addToSet"].items():
+                if k not in doc or not isinstance(doc[k], list):
+                    doc[k] = []
+                if v not in doc[k]:
+                    doc[k].append(deepcopy(v))
         if "$unset" in update:
             for k in update["$unset"]:
                 doc.pop(k, None)

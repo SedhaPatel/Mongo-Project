@@ -15,7 +15,6 @@ import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
-from pymongo import UpdateOptions
 from pymongo.database import Database
 from pymongo.errors import PyMongoError
 
