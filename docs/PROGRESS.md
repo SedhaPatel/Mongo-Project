@@ -457,3 +457,74 @@ POST /ncr (empty measurements) -> 400 measurements must contain at least one doc
 
 
 
+
+---
+
+## Milestone 8: Stretch and Pitch (Section 12, 14, 15)
+
+- **Status:** COMPLETE
+- **Deliverables:**
+  - `backend/seed/drift_benchmark.py`: Calibration-drift benchmark comparing topology-only invalidation against Metrologic's verdict recomputation across 20 drift scenarios.
+  - `docs/demo-script.md`: Comprehensive 4-minute demo pitch script with step-by-step actions, verbatim talking points, MongoDB feature callouts, and anticipated judge Q&A answers.
+  - `docs/slides.md`: 5-slide pitch deck covering the ISO/IEC 17025 clause 7.1.5.2 gap, the Metrologic concept, architecture mapping to MongoDB features, demo sequence, and benchmark comparison.
+
+### Calibration-Drift Benchmark Output:
+
+```bash
+uv run python backend/seed/drift_benchmark.py
+```
+
+```text
+========================================================================
+METROLOGIC CALIBRATION-DRIFT BENCHMARK (Section 12, M8 Owner: B)
+========================================================================
+Scenarios: 20
+As-found error: 0.01 mm, Uncertainty: 0.003 mm
+
+Scenario     Topology demoted  Recompute demoted   Over-inv   Under-inv  Unnecessary verify
+------------------------------------------------------------------------
+S01                         3                  0          3           0                   0
+S02                         3                  0          3           0                   0
+S03                         3                  0          3           0                   0
+S04                         3                  0          3           0                   0
+S05                         3                  0          3           0                   0
+S06                         3                  0          3           0                   0
+S07                         3                  0          3           0                   0
+S08                         3                  0          3           0                   0
+S09                         3                  0          3           0                   0
+S10                         3                  0          3           0                   0
+S11                         3                  0          3           0                   0
+S12                         3                  0          3           0                   0
+S13                         3                  0          3           0                   0
+S14                         3                  0          3           0                   0
+S15                         3                  0          3           0                   0
+S16                         3                  0          3           0                   0
+S17                         3                  0          3           0                   0
+S18                         3                  0          3           0                   0
+S19                         3                  0          3           0                   0
+S20                         3                  0          3           0                   0
+------------------------------------------------------------------------
+TOTAL                                                    60           0                   0
+
+Interpretation:
+  Over-invalidation (60): topology-only demotes lessons that verdict
+  recomputation keeps -- false demotions that hurt productivity.
+  Under-invalidation (0): topology-only keeps lessons that verdict
+  recomputation demotes -- missed escapes that risk quality escapes.
+  Unnecessary verification (0): lessons demoted to
+  NEEDS_VERIFICATION that could have stayed ACTIVE with independent support.
+
+Conclusion: verdict recomputation (Metrologic) avoids 60 false demotions and 0 missed demotions across 20 scenarios.
+```
+
+### Final Acceptance Suite:
+
+```bash
+uv run pytest -q
+```
+
+```text
+........................................................................ [ 91%]
+.......                                                                  [100%]
+79 passed in 4.53s
+```
