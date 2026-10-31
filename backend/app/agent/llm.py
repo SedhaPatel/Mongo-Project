@@ -1,4 +1,4 @@
-"""Claude calls for Metrologic, with forced tool use and a disk cache.
+"""Claude and Gemini calls for Metrologic, with forced tool use and a disk cache.
 
 Two jobs only (PLAN Section 0 rule 2):
 
@@ -9,9 +9,7 @@ Two jobs only (PLAN Section 0 rule 2):
 Every response is cached by ``sha256(model + canonical JSON input)`` in
 ``CACHE_DIR`` (Section 7.6), so the demo replays byte-identically offline.
 ``OFFLINE=1`` on a miss raises :class:`LLMUnavailable`; callers fall back to the
-committed fixtures.  The transport is the Anthropic Messages REST API through
-``httpx`` (already a project dependency) with the same forced
-``tool_choice`` the SDK would send.
+committed fixtures.  Supports both Google Gemini and Anthropic Claude REST APIs.
 """
 
 import json
@@ -20,7 +18,12 @@ from typing import Any, Dict, List, Optional, Tuple
 import httpx
 
 from backend.app.cache import compute_cache_key, get_cached_response, set_cached_response
-from backend.app.config import ANTHROPIC_API_KEY, LLM_MODEL
+from backend.app.config import (
+    ANTHROPIC_API_KEY,
+    GOOGLE_API_KEY,
+    LLM_MODEL,
+    LLM_PROVIDER,
+)
 
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
 ANTHROPIC_VERSION = "2023-06-01"
@@ -117,6 +120,11 @@ REWORD_SCHEMA: Dict[str, Any] = {
 }
 
 
+def _canonical_json(obj: Any) -> str:
+    """Serialize objects to JSON with default=str to safely support datetimes."""
+    return json.dumps(obj, sort_keys=True, ensure_ascii=False, default=str)
+
+
 def _tool_payload(system: str, user_input: Dict[str, Any], attempt: int) -> Dict[str, Any]:
     """Canonical cache payload; ``attempt`` forces a real second call on retry."""
     return {"system": system, "input": user_input, "attempt": attempt}
@@ -126,8 +134,90 @@ def _cache_key(model: str, tool: str, payload: Dict[str, Any]) -> str:
     return compute_cache_key(f"{model}:tool:{tool}", payload)
 
 
-def _messages_body(system: str, user_input: Dict[str, Any], tool: str, schema: Dict[str, Any],
-                   model: str, max_tokens: int) -> Dict[str, Any]:
+def _call_gemini_tool(
+    system: str,
+    user_input: Dict[str, Any],
+    tool: str,
+    schema: Dict[str, Any],
+    model: str,
+) -> Dict[str, Any]:
+    """Call Google Gemini REST API with forced function declaration."""
+    if not GOOGLE_API_KEY:
+        raise LLMUnavailable("GOOGLE_API_KEY is not configured")
+
+    gemini_model = model
+    if not gemini_model or "gemini" not in gemini_model.lower():
+        gemini_model = "gemini-2.5-flash"
+    elif gemini_model == "gemini-2.5-flash-lite":
+        gemini_model = "gemini-2.5-flash"
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent"
+
+    body = {
+        "contents": [
+            {
+                "role": "user",
+                "parts": [{"text": _canonical_json(user_input)}],
+            }
+        ],
+        "systemInstruction": {
+            "parts": [{"text": system}],
+        },
+        "tools": [
+            {
+                "functionDeclarations": [
+                    {
+                        "name": tool,
+                        "description": schema.get("description", tool),
+                        "parameters": schema,
+                    }
+                ]
+            }
+        ],
+        "toolConfig": {
+            "functionCallingConfig": {
+                "mode": "ANY",
+                "allowedFunctionNames": [tool],
+            }
+        },
+    }
+
+    try:
+        with httpx.Client(timeout=60.0) as client:
+            response = client.post(
+                url,
+                headers={
+                    "x-goog-api-key": GOOGLE_API_KEY,
+                    "content-type": "application/json",
+                },
+                json=body,
+            )
+            response.raise_for_status()
+            data = response.json()
+    except (httpx.HTTPError, ValueError) as exc:
+        raise LLMUnavailable(f"Gemini request failed: {exc}") from exc
+
+    candidates = data.get("candidates", [])
+    if not candidates:
+        raise LLMUnavailable("Gemini returned no candidates")
+
+    for part in candidates[0].get("content", {}).get("parts", []):
+        fn_call = part.get("functionCall")
+        if fn_call and fn_call.get("name") == tool:
+            args = fn_call.get("args")
+            if isinstance(args, dict):
+                return args
+    raise LLMUnavailable(f"Gemini returned no functionCall block for {tool}")
+
+
+def _messages_body(
+    system: str,
+    user_input: Dict[str, Any],
+    tool: str,
+    schema: Dict[str, Any],
+    model: str,
+    max_tokens: int,
+) -> Dict[str, Any]:
     return {
         "model": model,
         "max_tokens": max_tokens,
@@ -135,7 +225,7 @@ def _messages_body(system: str, user_input: Dict[str, Any], tool: str, schema: D
         "messages": [
             {
                 "role": "user",
-                "content": json.dumps(user_input, sort_keys=True, ensure_ascii=False),
+                "content": _canonical_json(user_input),
             }
         ],
         "tools": [{"name": tool, "description": schema.get("description", tool), "input_schema": schema}],
@@ -163,8 +253,14 @@ def _call_forced_tool(
     if cached is not None:
         return cached, "cache"
 
+    # Provider selection: Gemini or Anthropic
+    if LLM_PROVIDER == "gemini" or (GOOGLE_API_KEY and not ANTHROPIC_API_KEY):
+        result = _call_gemini_tool(system, user_input, tool, schema, model)
+        set_cached_response(key, result)
+        return result, "llm"
+
     if not ANTHROPIC_API_KEY:
-        raise LLMUnavailable("ANTHROPIC_API_KEY is not configured")
+        raise LLMUnavailable("Neither GOOGLE_API_KEY nor ANTHROPIC_API_KEY is configured")
 
     body = _messages_body(system, user_input, tool, schema, model, max_tokens)
     try:
