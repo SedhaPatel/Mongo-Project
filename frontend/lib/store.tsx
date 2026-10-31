@@ -50,6 +50,9 @@ export interface Store {
   useFixtures: boolean;
   toggleFixtures: () => void;
   setUseFixtures: (v: boolean) => void;
+  setCustomCaption: (c: string | null) => void;
+  setRecommend: (r: RecommendResult | null) => void;
+  refreshLiveState: () => Promise<void>;
   select: (id: string | null) => void;
   doReset: () => void;
   doStage1a: () => void;
@@ -71,6 +74,7 @@ export function useStore(): Store {
 
 export function MetroProvider({ children }: { children: React.ReactNode }) {
   const [stage, setStage] = useState<Stage>("reset");
+  const [customCaption, setCustomCaption] = useState<string | null>(null);
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [elements, setElements] = useState<GraphElements>(emptyGraph);
   const [recommend, setRecommend] = useState<RecommendResult | null>(null);
@@ -118,11 +122,27 @@ export function MetroProvider({ children }: { children: React.ReactNode }) {
     if (last) setPulse((p) => ({ id: last, n: p.n + 1 }));
   }, []);
 
+  const refreshLiveState = useCallback(async () => {
+    try {
+      const [g, rev] = await Promise.all([liveApi.graph(), liveApi.review()]);
+      if (g && g.nodes) {
+        elementsRef.current = g;
+        setElements(g);
+      }
+      if (Array.isArray(rev)) {
+        setReview(rev);
+      }
+    } catch (err) {
+      console.warn("[refreshLiveState]", err);
+    }
+  }, []);
+
   const doReset = useCallback(() => {
     if (!useFixturesRef.current) {
       liveApi.reset().catch((e) => console.warn("[liveApi.reset]", e));
     }
     setStage("reset");
+    setCustomCaption(null);
     setEvents([]);
     elementsRef.current = emptyGraph();
     setElements(emptyGraph());
@@ -142,6 +162,7 @@ export function MetroProvider({ children }: { children: React.ReactNode }) {
     if (stageRef.current !== "reset" || busy) return;
     setBusy(true);
     setStage("1a");
+    setCustomCaption(null);
     setGraph(baseGraph("1a"));
     if (!useFixturesRef.current) {
       try {
@@ -158,6 +179,7 @@ export function MetroProvider({ children }: { children: React.ReactNode }) {
     if (stageRef.current !== "1a" || busy) return;
     setBusy(true);
     setStage("1b");
+    setCustomCaption(null);
     setGraph(baseGraph("1b"));
     if (!useFixturesRef.current) {
       try {
@@ -174,6 +196,7 @@ export function MetroProvider({ children }: { children: React.ReactNode }) {
     if (stageRef.current !== "1b" || busy) return;
     setBusy(true);
     setStage("2");
+    setCustomCaption(null);
     setGraph(baseGraph("2"));
     let rec: RecommendResult | null = null;
     if (!useFixturesRef.current) {
@@ -192,6 +215,7 @@ export function MetroProvider({ children }: { children: React.ReactNode }) {
   const doArmTTL = useCallback(() => {
     if (!atLeast(stageRef.current, "2") || stageRef.current === "3" || busy) return;
     setStage("2-arm");
+    setCustomCaption(null);
     const g = {
       nodes: elementsRef.current.nodes.map((n) => ({ data: { ...n.data } })),
       edges: elementsRef.current.edges.map((e) => ({ data: { ...e.data } })),
@@ -206,6 +230,7 @@ export function MetroProvider({ children }: { children: React.ReactNode }) {
     if (!atLeast(stageRef.current, "2") || busy) return;
     setBusy(true);
     setStage("3");
+    setCustomCaption(null);
     if (!useFixturesRef.current) {
       try {
         await liveApi.calibration();
@@ -216,7 +241,6 @@ export function MetroProvider({ children }: { children: React.ReactNode }) {
     await stream(EVENTS_STAGE3_MAIN(), applyFixtureEvent, 380);
     setReview(REVIEW_FIXTURE);
     setBusy(false);
-    // TTL deletion arrives shortly afterwards once armed (i.e. within stage 2-arm)
     setTimeout(() => {
       if (stageRef.current === "3") applyFixtureEvent(TTL_EVENT());
     }, 6000);
@@ -225,6 +249,7 @@ export function MetroProvider({ children }: { children: React.ReactNode }) {
   const doReAsk = useCallback(async () => {
     if (stageRef.current !== "3" || busy) return;
     setBusy(true);
+    setCustomCaption(null);
     let nextRec = RECOMMEND_FIXTURES["3"];
     if (!useFixturesRef.current) {
       try {
@@ -255,7 +280,7 @@ export function MetroProvider({ children }: { children: React.ReactNode }) {
 
   const value: Store = {
     stage,
-    caption: STAGE_CAPTIONS[stage],
+    caption: customCaption || STAGE_CAPTIONS[stage],
     events,
     elements,
     recommend,
@@ -268,6 +293,9 @@ export function MetroProvider({ children }: { children: React.ReactNode }) {
     useFixtures,
     toggleFixtures,
     setUseFixtures,
+    setCustomCaption,
+    setRecommend,
+    refreshLiveState,
     select: setSelected,
     doReset,
     doStage1a,

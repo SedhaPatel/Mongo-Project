@@ -300,7 +300,7 @@ def _post_recommend(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 def _calibration_endpoint(payload: Dict[str, Any], direct: bool = False) -> Dict[str, Any]:
     """Write an as-found calibration result to ``gauges`` and run the cascade."""
-    gauge_id = payload.get("gauge_id")
+    gauge_id = payload.get("gauge_id") or payload.get("gauge")
     if not isinstance(gauge_id, str) or not gauge_id:
         raise HTTPException(status_code=400, detail="gauge_id is required")
 

@@ -1,13 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { atLeast } from "@/lib/graph";
+import SimulateModal from "@/components/SimulateModal";
 
 export default function ControlBar() {
   const {
     stage, busy, doReset, doStage1a, doStage1b, doStage2,
     doArmTTL, doCalibration, doReAsk, doReplayTTL,
   } = useStore();
+  const [isSimulateOpen, setIsSimulateOpen] = useState(false);
 
   return (
     <div
@@ -54,6 +57,26 @@ export default function ControlBar() {
         Replay TTL event
       </button>
       {busy && <span className="stamp">working…</span>}
+
+      <button
+        type="button"
+        className="btn"
+        onClick={() => setIsSimulateOpen(true)}
+        style={{
+          marginLeft: "auto",
+          borderStyle: "dashed",
+          fontWeight: 700,
+          background: "var(--paper-dark)",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+        }}
+        title="Simulate custom calibration drift, ingest new NCR, or query custom plan"
+      >
+        <span>✎</span> Simulate Custom Case / NCR
+      </button>
+
+      <SimulateModal isOpen={isSimulateOpen} onClose={() => setIsSimulateOpen(false)} />
     </div>
   );
 }

@@ -100,3 +100,4 @@ flowchart LR
 > 2. **Change Streams with Pre/Post Images:** Emits realtime cascade events with before-and-after audit logs.
 > 3. **TTL Indexes (`expireAfterSeconds: 0`):** Automatically reaps provisional trial memories after 30 days or quick experiments in 30 seconds.
 > 4. **$graphLookup Aggregations:** Traverses multi-depth dependency trees for transitive invalidation.
+
