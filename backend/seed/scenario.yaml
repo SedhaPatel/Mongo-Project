@@ -1,0 +1,395 @@
+# Metrologic Demo Scenario Definition
+# Single source of truth for gauges, scenario measurements, demo memories, and past decisions.
+
+gauges:
+  - _id: "BG-07"
+    type: "bore_gauge"
+    cal_status: "OK"
+    last_good_cal: "2026-08-01T00:00:00Z"
+  - _id: "BG-03"
+    type: "bore_gauge"
+    cal_status: "OK"
+    last_good_cal: "2026-08-01T00:00:00Z"
+  - _id: "CMM-02"
+    type: "cmm"
+    cal_status: "OK"
+    last_good_cal: "2026-08-01T00:00:00Z"
+  - _id: "CMM-05"
+    type: "cmm"
+    cal_status: "OK"
+    last_good_cal: "2026-08-01T00:00:00Z"
+  - _id: "MIC-11"
+    type: "micrometer"
+    cal_status: "OK"
+    last_good_cal: "2026-08-01T00:00:00Z"
+  - _id: "HG-04"
+    type: "height_gauge"
+    cal_status: "OK"
+    last_good_cal: "2026-08-01T00:00:00Z"
+
+measurements:
+  # L1 evidence on BG-07 (Trial B - pass)
+  - _id: "M1"
+    gauge_id: "BG-07"
+    part_serial: "SN-2201"
+    value_mm: 32.012
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-14T09:00:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+  - _id: "M2"
+    gauge_id: "BG-07"
+    part_serial: "SN-2202"
+    value_mm: 32.007
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-14T09:15:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+  - _id: "M3"
+    gauge_id: "BG-07"
+    part_serial: "SN-2203"
+    value_mm: 32.003
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-14T09:30:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+  - _id: "M4"
+    gauge_id: "BG-07"
+    part_serial: "SN-2204"
+    value_mm: 32.015
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-14T09:45:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+  - _id: "M5"
+    gauge_id: "BG-07"
+    part_serial: "SN-2205"
+    value_mm: 32.010
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-14T10:00:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+
+  # L1 corroboration on CMM-02
+  - _id: "M6"
+    gauge_id: "CMM-02"
+    part_serial: "SN-2206"
+    value_mm: 32.011
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-20T11:00:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+  - _id: "M7"
+    gauge_id: "CMM-02"
+    part_serial: "SN-2207"
+    value_mm: 32.014
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-20T11:15:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+  - _id: "M8"
+    gauge_id: "CMM-02"
+    part_serial: "SN-2208"
+    value_mm: 32.009
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-20T11:30:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+
+  # L2 evidence on BG-07 (Inconel 718 Ø28H7)
+  - _id: "M9"
+    gauge_id: "BG-07"
+    part_serial: "SN-2209"
+    value_mm: 28.010
+    nominal_mm: 28.000
+    tol_lo_mm: 28.000
+    tol_hi_mm: 28.021
+    u_mm: 0.002
+    timestamp: "2026-09-22T08:00:00Z"
+    feature: "Ø28H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+  - _id: "M10"
+    gauge_id: "BG-07"
+    part_serial: "SN-2210"
+    value_mm: 28.007
+    nominal_mm: 28.000
+    tol_lo_mm: 28.000
+    tol_hi_mm: 28.021
+    u_mm: 0.002
+    timestamp: "2026-09-22T08:15:00Z"
+    feature: "Ø28H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+  - _id: "M11"
+    gauge_id: "BG-07"
+    part_serial: "SN-2211"
+    value_mm: 28.011
+    nominal_mm: 28.000
+    tol_lo_mm: 28.000
+    tol_hi_mm: 28.021
+    u_mm: 0.002
+    timestamp: "2026-09-22T08:30:00Z"
+    feature: "Ø28H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+  - _id: "M12"
+    gauge_id: "BG-07"
+    part_serial: "SN-2212"
+    value_mm: 28.006
+    nominal_mm: 28.000
+    tol_lo_mm: 28.000
+    tol_hi_mm: 28.021
+    u_mm: 0.002
+    timestamp: "2026-09-22T08:45:00Z"
+    feature: "Ø28H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+  - _id: "M13"
+    gauge_id: "BG-07"
+    part_serial: "SN-2213"
+    value_mm: 28.012
+    nominal_mm: 28.000
+    tol_lo_mm: 28.000
+    tol_hi_mm: 28.021
+    u_mm: 0.002
+    timestamp: "2026-09-22T09:00:00Z"
+    feature: "Ø28H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+
+  # F1 evidence on BG-07 (Trial A - feed reduction alone failed)
+  - _id: "M14"
+    gauge_id: "BG-07"
+    part_serial: "SN-2198"
+    value_mm: 32.034
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-12T14:00:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "fail"
+    current_verdict: "fail"
+  - _id: "M15"
+    gauge_id: "BG-07"
+    part_serial: "SN-2199"
+    value_mm: 32.038
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-12T14:15:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "fail"
+    current_verdict: "fail"
+  - _id: "M16"
+    gauge_id: "BG-07"
+    part_serial: "SN-2200"
+    value_mm: 32.041
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-09-12T14:30:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "fail"
+    current_verdict: "fail"
+
+  # M-old: BG-07 measurement BEFORE last_good_cal (2026-08-01). Must remain untouched.
+  - _id: "M-old"
+    gauge_id: "BG-07"
+    part_serial: "SN-2050"
+    value_mm: 32.003
+    nominal_mm: 32.000
+    tol_lo_mm: 32.000
+    tol_hi_mm: 32.025
+    u_mm: 0.002
+    timestamp: "2026-07-20T10:00:00Z"
+    feature: "Ø32H7 bore"
+    verdict: "pass"
+    current_verdict: "pass"
+    verdict_history: []
+
+memories:
+  - _id: "L1"
+    workspace: "plant-1"
+    owner: "role:process-engineer"
+    type: "lesson"
+    title: "Spring pass plus lower radial engagement clears bore taper"
+    content: "Bore taper on Ti-6Al-4V housings cleared when introducing a spring pass with 0.05 mm radial depth of cut."
+    action: "Add a finishing spring pass with 0.05 mm radial depth of cut on Ø32H7 titanium finish boring"
+    scope:
+      material: "Ti-6Al-4V"
+      process: "finish boring"
+      machine: "VF-4"
+      feature_class: "bore"
+      tolerance_band: "H7"
+    source:
+      ncr_id: "NCR-0412"
+      author_role: "manufacturing-engineer"
+      session_id: "s-001"
+    support_sets:
+      - ["M1", "M2", "M3", "M4", "M5"]
+      - ["M6", "M7", "M8"]
+    derived_from: ["M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"]
+    supports: []
+    used_by: []
+    validity_state: "ACTIVE"
+    mw_success: 1
+    mw_fail: 0
+    created_at: "2026-10-31T09:00:00Z"
+    valid_from: "2026-10-31T09:00:00Z"
+    history:
+      - ts: "2026-10-31T09:00:00Z"
+        event: "created"
+        from_state: null
+        to_state: "PROVISIONAL"
+        cause: "ingest NCR-0412"
+      - ts: "2026-10-31T09:05:00Z"
+        event: "corroborated"
+        from_state: "PROVISIONAL"
+        to_state: "ACTIVE"
+        cause: "corroborated by CMM-02 (job NCR-0419)"
+        note: "Two instruments now support this lesson"
+
+  - _id: "L2"
+    workspace: "plant-1"
+    owner: "role:process-engineer"
+    type: "lesson"
+    title: "Raise coolant concentration for Inconel 718 finish boring"
+    content: "Chatter on Inconel 718 bores cleared when coolant concentration rose from 8% to 10%."
+    action: "Raise coolant concentration to 10% before finish boring Inconel 718 bores"
+    scope:
+      material: "Inconel 718"
+      process: "finish boring"
+      machine: "VF-4"
+      feature_class: "bore"
+      tolerance_band: "H7"
+    source:
+      ncr_id: "NCR-0412"
+      author_role: "manufacturing-engineer"
+      session_id: "s-001"
+    support_sets:
+      - ["M9", "M10", "M11", "M12", "M13"]
+    derived_from: ["M9", "M10", "M11", "M12", "M13"]
+    supports: []
+    used_by: ["D1", "D2"]
+    validity_state: "PROVISIONAL"
+    mw_success: 2
+    mw_fail: 0
+    created_at: "2026-10-31T09:00:00Z"
+    valid_from: "2026-10-31T09:00:00Z"
+    expire_at: "2026-11-30T09:00:00Z"
+    history:
+      - ts: "2026-10-31T09:00:00Z"
+        event: "created"
+        from_state: null
+        to_state: "PROVISIONAL"
+        cause: "ingest NCR-0412"
+
+  - _id: "F1"
+    workspace: "plant-1"
+    owner: "role:process-engineer"
+    type: "failed_attempt"
+    title: "Feed reduction alone fails to correct taper on Ti-6Al-4V"
+    content: "Reducing feed rate from 0.08 mm/rev to 0.04 mm/rev caused tool rubbing and worsened taper."
+    action: "Do not attempt feed reduction alone on Ø32H7 titanium boring; causes rubbing and out-of-tolerance taper"
+    scope:
+      material: "Ti-6Al-4V"
+      process: "finish boring"
+      machine: "VF-4"
+      feature_class: "bore"
+      tolerance_band: "H7"
+    source:
+      ncr_id: "NCR-0412"
+      author_role: "manufacturing-engineer"
+      session_id: "s-001"
+    support_sets:
+      - ["M14", "M15", "M16"]
+    derived_from: ["M14", "M15", "M16"]
+    supports: []
+    used_by: []
+    validity_state: "PROVISIONAL"
+    mw_success: 0
+    mw_fail: 0
+    created_at: "2026-10-31T09:00:00Z"
+    valid_from: "2026-10-31T09:00:00Z"
+    expire_at: "2026-11-30T09:00:00Z"
+    history:
+      - ts: "2026-10-31T09:00:00Z"
+        event: "created"
+        from_state: null
+        to_state: "PROVISIONAL"
+        cause: "ingest NCR-0412"
+
+decisions:
+  - _id: "D1"
+    query: "Process plan for Inconel 718 turbine sleeve boring"
+    scope:
+      material: "Inconel 718"
+      process: "finish boring"
+      machine: "VF-4"
+      feature_class: "bore"
+      tolerance_band: "H7"
+    plan_steps:
+      - kind: "apply"
+        text: "Set coolant concentration to 10% on VF-4 prior to finish boring"
+        lesson_ids: ["L2"]
+    lessons_used: ["L2"]
+    ranking_trace: []
+    part_serials: ["SN-2208"]
+    created_at: "2026-10-15T14:30:00Z"
+    review_flag: false
+    review_reason: null
+
+  - _id: "D2"
+    query: "Production run for Inconel 718 hydraulic cylinder"
+    scope:
+      material: "Inconel 718"
+      process: "finish boring"
+      machine: "VF-4"
+      feature_class: "bore"
+      tolerance_band: "H7"
+    plan_steps:
+      - kind: "apply"
+        text: "Raise coolant concentration to 10% to eliminate bore chatter"
+        lesson_ids: ["L2"]
+    lessons_used: ["L2"]
+    ranking_trace: []
+    part_serials: ["SN-2211"]
+    created_at: "2026-10-20T11:15:00Z"
+    review_flag: false
+    review_reason: null
