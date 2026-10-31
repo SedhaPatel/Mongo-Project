@@ -200,20 +200,20 @@ function Legend() {
     ["HISTORICAL_ONLY", "var(--state-historical)"],
   ];
   return (
-    <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", fontSize: 9.5 }}>
       {items.map(([label, color]) => (
-        <span className="legend-item" key={label}>
-          <span className="dot" style={{ background: color }} /> {label}
+        <span className="legend-item" key={label} style={{ fontSize: 9.5, gap: 4 }}>
+          <span className="dot" style={{ background: color, width: 7, height: 7 }} /> {label}
         </span>
       ))}
-      <span className="legend-item">
-        <span className="dot" style={{ background: "var(--paper-dark)" }} /> pass
+      <span className="legend-item" style={{ fontSize: 9.5, gap: 4 }}>
+        <span className="dot" style={{ background: "var(--paper-dark)", width: 7, height: 7 }} /> pass
       </span>
-      <span className="legend-item">
-        <span className="dot" style={{ background: "var(--state-verify)" }} /> indeterminate
+      <span className="legend-item" style={{ fontSize: 9.5, gap: 4 }}>
+        <span className="dot" style={{ background: "var(--state-verify)", width: 7, height: 7 }} /> indet.
       </span>
-      <span className="legend-item">
-        <span className="dot" style={{ background: "var(--state-historical)" }} /> fail / flipped
+      <span className="legend-item" style={{ fontSize: 9.5, gap: 4 }}>
+        <span className="dot" style={{ background: "var(--state-historical)", width: 7, height: 7 }} /> fail / flipped
       </span>
     </div>
   );
@@ -222,9 +222,34 @@ function Legend() {
 function CaptionBar() {
   const { caption } = useStore();
   return (
-    <div style={{ padding: "4px 12px 8px", borderTop: "1.5px solid var(--ink)", display: "flex", alignItems: "center", gap: 24 }}>
-      <span className="caption">✎ {caption}</span>
-      <Legend />
+    <div
+      style={{
+        padding: "4px 12px 6px",
+        borderTop: "1.5px solid var(--ink)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+        background: "var(--paper)",
+        flexWrap: "wrap",
+        minHeight: 28,
+      }}
+    >
+      <div
+        className="caption"
+        style={{
+          flex: "1 1 300px",
+          minWidth: 0,
+          fontSize: 12,
+          lineHeight: 1.35,
+          overflowWrap: "break-word",
+        }}
+      >
+        ✎ {caption}
+      </div>
+      <div style={{ flexShrink: 0 }}>
+        <Legend />
+      </div>
     </div>
   );
 }

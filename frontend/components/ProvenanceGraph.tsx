@@ -30,13 +30,15 @@ const stylesheet: cytoscape.StylesheetJson = [
       "border-width": 2,
       "border-style": "dashed",
       "border-color": INK,
-      padding: "20px",
-      "min-width": "180px",
-      "min-height": "80px",
+      padding: "26px",
+      "min-width": "190px",
+      "min-height": "85px",
       "text-valign": "top",
       "text-halign": "center",
-      "font-size": 11,
-      "text-max-width": 160,
+      "text-margin-y": 14,
+      "font-size": 10,
+      "font-weight": "bold",
+      "text-max-width": 180,
       "background-opacity": 0.75,
     } as unknown as cytoscape.Css.Node,
   },
@@ -52,15 +54,19 @@ const stylesheet: cytoscape.StylesheetJson = [
   {
     selector: "node[kind = 'measurement'], node[kind = 'measurement_group']",
     style: {
-      shape: "rectangle",
-      width: 38,
-      height: 25,
+      shape: "round-rectangle",
+      width: 106,
+      height: 32,
       "background-color": PAPER_DARK,
       "background-opacity": 1,
       "border-width": 1.5,
       "border-color": INK,
       "font-size": 8,
-      "text-max-width": 90,
+      "text-valign": "center",
+      "text-halign": "center",
+      "text-wrap": "wrap",
+      "text-max-width": 98,
+      padding: "4px",
     } as unknown as cytoscape.Css.Node,
   },
   {
@@ -83,13 +89,16 @@ const stylesheet: cytoscape.StylesheetJson = [
     selector: "node[kind = 'lesson'], node[kind = 'failed_attempt']",
     style: {
       shape: "round-rectangle",
-      width: 96,
-      height: 48,
+      width: 130,
+      height: 58,
       "border-width": 2.5,
       "border-color": INK,
-      "font-size": 9,
-      "text-max-width": 115,
+      "font-size": 8.5,
+      "text-wrap": "wrap",
+      "text-max-width": 122,
       "text-valign": "center",
+      "text-halign": "center",
+      padding: "6px",
     } as unknown as cytoscape.Css.Node,
   },
   {
@@ -105,13 +114,16 @@ const stylesheet: cytoscape.StylesheetJson = [
     selector: "node[kind = 'decision']",
     style: {
       shape: "diamond",
-      width: 54,
-      height: 32,
+      width: 72,
+      height: 44,
       "background-color": PAPER,
       "border-width": 2,
       "border-color": INK,
-      "font-size": 8,
-      "text-max-width": 110,
+      "font-size": 7.5,
+      "text-wrap": "wrap",
+      "text-max-width": 62,
+      "text-valign": "center",
+      "text-halign": "center",
     } as unknown as cytoscape.Css.Node,
   },
   {
@@ -236,9 +248,9 @@ export default function ProvenanceGraph() {
               name: "cose",
               animate: true,
               animationDuration: 400,
-              padding: 30,
-              idealEdgeLength: 90,
-              randomize: true,
+              padding: 35,
+              idealEdgeLength: 110,
+              randomize: false,
             }).run();
           } catch {}
 
@@ -249,10 +261,10 @@ export default function ProvenanceGraph() {
             if (cy.current && !cy.current.destroyed()) {
               try {
                 cy.current.resize();
-                cy.current.fit(undefined, 30);
+                cy.current.fit(undefined, 35);
               } catch {}
             }
-          }, 300);
+          }, 320);
         }
       }
     } catch (err) {
