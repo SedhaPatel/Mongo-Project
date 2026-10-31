@@ -387,3 +387,4 @@ export default function SlidesModal({ isOpen, onClose, onOpenWorkbench }: Slides
     </div>
   );
 }
+
