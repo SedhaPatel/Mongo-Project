@@ -15,6 +15,26 @@ import SlidesModal from "@/components/SlidesModal";
 // cytoscape needs the DOM SSR is not allowed to touch
 const ProvenanceGraph = dynamic(() => import("@/components/ProvenanceGraph"), {
   ssr: false,
+  loading: () => (
+    <div
+      className="card"
+      style={{
+        flex: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: 300,
+        background: "var(--paper)",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <span className="stamp" style={{ marginBottom: 6 }}>CYTOSCAPE CANVAS</span>
+        <div className="caption" style={{ fontSize: 13, marginTop: 4 }}>
+          ✎ Initializing interactive provenance graph…
+        </div>
+      </div>
+    </div>
+  ),
 });
 
 function Header({
