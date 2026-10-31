@@ -150,6 +150,7 @@ export default function ProvenanceGraph() {
   const holder = useRef<HTMLDivElement | null>(null);
   const cy = useRef<Core | null>(null);
   const layoutKey = useRef("");
+  const fitTimer = useRef<NodeJS.Timeout | null>(null);
 
   // build once
   useEffect(() => {
@@ -172,15 +173,29 @@ export default function ProvenanceGraph() {
 
     const ro = new ResizeObserver(() => {
       if (cy.current && !cy.current.destroyed()) {
-        cy.current.resize();
+        try {
+          cy.current.resize();
+        } catch {}
       }
     });
     ro.observe(holder.current);
 
     return () => {
       ro.disconnect();
-      cy.current?.stop(true);
-      cy.current?.destroy();
+      if (fitTimer.current) {
+        clearTimeout(fitTimer.current);
+        fitTimer.current = null;
+      }
+      try {
+        const currentCy = cy.current;
+        if (currentCy && !currentCy.destroyed()) {
+          currentCy.stop(true);
+          currentCy.removeAllListeners();
+          currentCy.destroy();
+        }
+      } catch {
+        // suppress benign cytoscape internal teardown errors
+      }
       cy.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -189,48 +204,59 @@ export default function ProvenanceGraph() {
   // diff elements by id (idempotent patch)
   useEffect(() => {
     const c = cy.current;
-    if (!c) return;
-    const wantedNode = new Map(elements.nodes.map((n) => [n.data.id, n.data]));
-    const wantedEdge = new Map(elements.edges.map((e) => [e.data.id, e.data]));
+    if (!c || c.destroyed()) return;
+    try {
+      const wantedNode = new Map(elements.nodes.map((n) => [n.data.id, n.data]));
+      const wantedEdge = new Map(elements.edges.map((e) => [e.data.id, e.data]));
 
-    c.nodes().forEach((n) => {
-      const id = n.id();
-      if (!wantedNode.has(id)) n.remove();
-      else n.data(wantedNode.get(id) as cytoscape.NodeDataDefinition);
-    });
-    c.edges().forEach((e) => {
-      const id = e.id();
-      if (!wantedEdge.has(id)) e.remove();
-      else e.data(wantedEdge.get(id) as cytoscape.EdgeDataDefinition);
-    });
-    for (const data of elements.nodes.map((n) => n.data)) {
-      if (!c.$id(data.id).nonempty()) c.add({ group: "nodes", data });
-    }
-    for (const data of elements.edges.map((e) => e.data)) {
-      if (!c.$id(data.id).nonempty()) c.add({ group: "edges", data });
-    }
-
-    // re-layout only when the graph grows or the stage changes
-    const key = `${stage}|${elements.nodes.length}|${elements.edges.length}`;
-    if (key !== layoutKey.current) {
-      layoutKey.current = key;
-      if (elements.nodes.length > 0) {
-        void c.layout({
-          name: "cose",
-          animate: true,
-          animationDuration: 400,
-          padding: 30,
-          idealEdgeLength: 90,
-          randomize: true,
-        }).run();
-        const cyAtLayout = c;
-        setTimeout(() => {
-          if (cy.current && !cyAtLayout.destroyed()) {
-            cyAtLayout.resize();
-            cyAtLayout.fit(undefined, 30);
-          }
-        }, 300);
+      c.nodes().forEach((n) => {
+        const id = n.id();
+        if (!wantedNode.has(id)) n.remove();
+        else n.data(wantedNode.get(id) as cytoscape.NodeDataDefinition);
+      });
+      c.edges().forEach((e) => {
+        const id = e.id();
+        if (!wantedEdge.has(id)) e.remove();
+        else e.data(wantedEdge.get(id) as cytoscape.EdgeDataDefinition);
+      });
+      for (const data of elements.nodes.map((n) => n.data)) {
+        if (!c.$id(data.id).nonempty()) c.add({ group: "nodes", data });
       }
+      for (const data of elements.edges.map((e) => e.data)) {
+        if (!c.$id(data.id).nonempty()) c.add({ group: "edges", data });
+      }
+
+      // re-layout only when the graph grows or the stage changes
+      const key = `${stage}|${elements.nodes.length}|${elements.edges.length}`;
+      if (key !== layoutKey.current) {
+        layoutKey.current = key;
+        if (elements.nodes.length > 0) {
+          try {
+            c.layout({
+              name: "cose",
+              animate: true,
+              animationDuration: 400,
+              padding: 30,
+              idealEdgeLength: 90,
+              randomize: true,
+            }).run();
+          } catch {}
+
+          if (fitTimer.current) {
+            clearTimeout(fitTimer.current);
+          }
+          fitTimer.current = setTimeout(() => {
+            if (cy.current && !cy.current.destroyed()) {
+              try {
+                cy.current.resize();
+                cy.current.fit(undefined, 30);
+              } catch {}
+            }
+          }, 300);
+        }
+      }
+    } catch (err) {
+      console.warn("[ProvenanceGraph elements patch]", err);
     }
   }, [elements, stage]);
 
@@ -238,24 +264,28 @@ export default function ProvenanceGraph() {
   useEffect(() => {
     const c = cy.current;
     if (!c || !pulse.id || c.destroyed()) return;
-    const node = c.nodes().filter((n) => n.id() === pulse.id);
-    if (!node.empty()) {
-      // flash the node
-      void node
-        .animate({ style: { "border-width": 6 } }, { duration: 150 })
-        .animate({ style: { "border-width": 2.5 } }, { duration: 300 });
+    try {
+      const node = c.nodes().filter((n) => n.id() === pulse.id);
+      if (!node.empty()) {
+        // flash the node
+        void node
+          .animate({ style: { "border-width": 6 } }, { duration: 150 })
+          .animate({ style: { "border-width": 2.5 } }, { duration: 300 });
 
-      // If it's a gauge drift event or flipped measurement, ripple along downstream edges
-      const connectedEdges = node.connectedEdges();
-      if (!connectedEdges.empty()) {
-        connectedEdges.addClass("pulse-drift");
-        setTimeout(() => {
-          if (c && !c.destroyed()) {
-            connectedEdges.removeClass("pulse-drift");
-          }
-        }, 600);
+        // If it's a gauge drift event or flipped measurement, ripple along downstream edges
+        const connectedEdges = node.connectedEdges();
+        if (!connectedEdges.empty()) {
+          connectedEdges.addClass("pulse-drift");
+          setTimeout(() => {
+            if (cy.current && !cy.current.destroyed()) {
+              try {
+                connectedEdges.removeClass("pulse-drift");
+              } catch {}
+            }
+          }, 600);
+        }
       }
-    }
+    } catch {}
   }, [pulse]);
 
   return (

@@ -275,19 +275,35 @@ export default function Home() {
           onOpenSlides={() => setIsSlidesOpen(true)}
         />
 
-        {view === "home" ? (
+        <div
+          style={{
+            display: view === "home" ? "flex" : "none",
+            flex: 1,
+            overflowY: "auto",
+            minHeight: 0,
+            flexDirection: "column",
+          }}
+        >
           <HomeView
             onOpenWorkbench={() => setView("workbench")}
             onOpenSimulate={() => setIsSimulateOpen(true)}
             onOpenSlides={() => setIsSlidesOpen(true)}
           />
-        ) : (
-          <>
-            <ControlBar />
-            <Panels />
-            <CaptionBar />
-          </>
-        )}
+        </div>
+
+        <div
+          style={{
+            display: view === "workbench" ? "flex" : "none",
+            flex: 1,
+            overflow: "hidden",
+            minHeight: 0,
+            flexDirection: "column",
+          }}
+        >
+          <ControlBar />
+          <Panels />
+          <CaptionBar />
+        </div>
 
         <SimulateModal isOpen={isSimulateOpen} onClose={() => setIsSimulateOpen(false)} />
         <SlidesModal
